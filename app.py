@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 import os
-from answer_engine import answer_question
+from answer_engine import answer_question, get_available_sources
 
 app = Flask(__name__)
 
@@ -8,20 +8,28 @@ app = Flask(__name__)
 def index():
     results = []
     total_matches = 0
+    source_list = get_available_sources()
+
     if request.method == 'POST':
         question = request.form['question']
         source_filter = request.form.get('source_filter', '')
         secondary_keyword = request.form.get('secondary_keyword', '')
-        min_length = 80 if 'long_answers' in request.form else 0
+        detailed_only = 'long_answers' in request.form
 
-        results, total_matches = answer_question(
+        results = answer_question(
             question,
-            source_filter=source_filter,
-            secondary_keyword=secondary_keyword,
-            min_length=min_length
+            source=source_filter or None,
+            secondary_keyword=secondary_keyword or None,
+            detailed_only=detailed_only
         )
+        total_matches = len(results)
 
-    return render_template('index.html', results=results, total_matches=total_matches)
+    return render_template(
+        'index.html',
+        results=results,
+        total_matches=total_matches,
+        source_list=source_list
+    )
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

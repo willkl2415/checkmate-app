@@ -19,10 +19,11 @@
             flex-grow: 1;
             padding: 20px;
         }
-        input, select, textarea {
+        input, select, textarea, button {
             width: 100%;
             padding: 8px;
             margin: 6px 0 12px;
+            box-sizing: border-box;
         }
         label {
             font-weight: bold;
@@ -45,21 +46,21 @@
 <body>
     <div class="sidebar">
         <h2>Welcome to Checkmate</h2>
-        <p>This tool lets you ask questions and search through complex training, policy, or planning documents in plain English. Use filters and keywords to narrow results quickly and intuitively.</p>
+        <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
         <form method="POST">
             <label for="question">Enter your question or keyword:</label>
-            <input type="text" id="question" name="question" placeholder="e.g. KSA, training gap..." required>
+            <input type="text" id="question" name="question" placeholder="e.g. KSA, Training Gap" required>
 
             <label for="source_filter">Filter by document (optional):</label>
             <select name="source_filter">
                 <option value="">All</option>
-                {% for source in answer_question.get_available_sources() %}
+                {% for source in source_list %}
                     <option value="{{ source }}">{{ source }}</option>
                 {% endfor %}
             </select>
 
             <label for="secondary_keyword">Secondary keyword (optional):</label>
-            <input type="text" id="secondary_keyword" name="secondary_keyword" placeholder="e.g. Introduction, Evaluation">
+            <input type="text" id="secondary_keyword" name="secondary_keyword" placeholder="e.g. Evaluation, Scoping">
 
             <label><input type="checkbox" name="long_answers" checked> Show detailed results only</label>
 
