@@ -1,1 +1,87 @@
-<!-- Placeholder for index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to Checkmate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 350px;
+            background: #f7f7f7;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+        }
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 12px;
+        }
+        label {
+            font-weight: bold;
+        }
+        .result {
+            margin-bottom: 24px;
+            padding: 12px;
+            border-bottom: 1px solid #ccc;
+        }
+        .source {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .section {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Welcome to Checkmate</h2>
+        <p>This tool lets you ask questions and search through complex training, policy, or planning documents in plain English. Use filters and keywords to narrow results quickly and intuitively.</p>
+        <form method="POST">
+            <label for="question">Enter your question or keyword:</label>
+            <input type="text" id="question" name="question" placeholder="e.g. KSA, training gap..." required>
+
+            <label for="source_filter">Filter by document (optional):</label>
+            <select name="source_filter">
+                <option value="">All</option>
+                {% for source in answer_question.get_available_sources() %}
+                    <option value="{{ source }}">{{ source }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="secondary_keyword">Secondary keyword (optional):</label>
+            <input type="text" id="secondary_keyword" name="secondary_keyword" placeholder="e.g. Introduction, Evaluation">
+
+            <label><input type="checkbox" name="long_answers" checked> Show detailed results only</label>
+
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <div class="content">
+        {% if results %}
+            <h2>Answer: {{ total_matches }} result{{ total_matches != 1 and 's' or '' }} found</h2>
+            {% for result in results %}
+                <div class="result">
+                    <div class="source"><strong>Source:</strong> {{ result.source }}</div>
+                    {% if result.section %}
+                        <div class="section">Section: {{ result.section }}</div>
+                    {% endif %}
+                    <div class="text">{{ result.text }}</div>
+                </div>
+            {% endfor %}
+        {% elif total_matches == 0 %}
+            <h2>No matching results found.</h2>
+        {% endif %}
+    </div>
+</body>
+</html>
