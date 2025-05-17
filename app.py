@@ -25,5 +25,3 @@ def index():
     sources = get_available_sources()
     return render_template("index.html", results=results, total_matches=total_matches, sources=sources)
 
-if __name__ == "__main__":
-    app.run(debug=False, port=10000)
