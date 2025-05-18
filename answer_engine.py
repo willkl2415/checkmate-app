@@ -1,40 +1,38 @@
 import json
+import re
 
-def load_chunks(filepath="chunks.json"):
-    with open(filepath, "r", encoding="utf-8") as f:
-        return json.load(f)
+# Load chunks.json on import
+with open("chunks.json", "r", encoding="utf-8") as f:
+    chunks = json.load(f)
 
-def get_available_sources(chunks):
-    return sorted(set(chunk.get("source", "Unknown") for chunk in chunks))
+def clean_text(text):
+    return re.sub(r"\s+", " ", text).strip().lower()
 
-def answer_question(chunks, question, document_filter=None, secondary_keyword=None, show_detailed=False):
-    results = []
+def answer_question(query, chunks, doc_filter=None, secondary=None, detailed=False):
+    query = clean_text(query)
+    if secondary:
+        secondary = clean_text(secondary)
 
-    # Sanitize input
-    question_keywords = [kw.strip().lower() for kw in question.split() if kw.strip()]
-    secondary_keywords = [kw.strip().lower() for kw in secondary_keyword.split()] if secondary_keyword else []
-
+    matches = []
     for chunk in chunks:
-        content = chunk.get("content", "").lower()
-        source = chunk.get("source", "Unknown")
-        heading = chunk.get("heading", "No heading")
+        content = clean_text(chunk["content"])
+        heading = clean_text(chunk.get("heading", ""))
+        source = chunk.get("source", "")
 
-        if document_filter and source != document_filter:
+        if doc_filter and source != doc_filter:
             continue
 
-        match_score = 0
-        match_score += sum(content.count(kw) for kw in question_keywords)
-        match_score += sum(content.count(kw) for kw in secondary_keywords)
+        primary_match = query in content or query in heading
+        secondary_match = secondary in content or secondary in heading if secondary else False
 
-        if match_score > 0:
-            results.append({
-                "source": source,
-                "heading": heading,
-                "content": chunk.get("content", ""),
-                "score": match_score
-            })
+        if detailed:
+            if primary_match and (not secondary or secondary_match):
+                matches.append(chunk)
+        else:
+            if primary_match or (secondary and secondary_match):
+                matches.append(chunk)
 
-    # Sort by score
-    results.sort(key=lambda x: x["score"], reverse=True)
+    return matches
 
-    return results if show_detailed else results[:3]
+def get_available_sources():
+    return sorted(set(chunk.get("source", "") for chunk in chunks if "source" in chunk))
