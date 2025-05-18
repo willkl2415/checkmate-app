@@ -1,41 +1,33 @@
-from difflib import SequenceMatcher
+import re
 
-def answer_question(query, chunks, source_filter=None, secondary_filter=None, detailed=False):
-    query = query.lower()
+def get_available_sources(chunks):
+    return sorted(set(chunk.get("source", "") for chunk in chunks if "source" in chunk))
+
+def answer_question(chunks, query, secondary_keyword):
     results = []
 
     for chunk in chunks:
-        text = chunk["content"].lower()
-        if query in text:
-            if source_filter and chunk["source"] != source_filter:
-                continue
-            if secondary_filter and secondary_filter.lower() not in text:
-                continue
-            results.append({
-                "content": chunk["content"],
-                "source": chunk["source"],
-                "heading": chunk.get("heading", "N/A"),
-                "chunk_id": chunk.get("chunk_id", "N/A")
-            })
-
-    if not results and not detailed:
-        # Try partial match if no exact match and not in detailed mode
-        for chunk in chunks:
-            text = chunk["content"].lower()
-            ratio = SequenceMatcher(None, query, text).ratio()
-            if ratio > 0.6:
-                if source_filter and chunk["source"] != source_filter:
-                    continue
-                if secondary_filter and secondary_filter.lower() not in text:
-                    continue
+        content = chunk.get("content", "")
+        if query.lower() in content.lower():
+            if secondary_keyword:
+                if secondary_keyword.lower() in content.lower():
+                    results.append({
+                        "source": chunk.get("source", ""),
+                        "heading": chunk.get("heading", ""),
+                        "content": highlight_keywords(content, [query, secondary_keyword])
+                    })
+            else:
                 results.append({
-                    "content": chunk["content"],
-                    "source": chunk["source"],
-                    "heading": chunk.get("heading", "N/A"),
-                    "chunk_id": chunk.get("chunk_id", "N/A")
+                    "source": chunk.get("source", ""),
+                    "heading": chunk.get("heading", ""),
+                    "content": highlight_keywords(content, [query])
                 })
 
     return results
 
-def get_available_sources(chunks):
-    return sorted(set(chunk.get("source", "") for chunk in chunks if "source" in chunk))
+def highlight_keywords(text, keywords):
+    for keyword in keywords:
+        if keyword:
+            pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+            text = pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
+    return text
