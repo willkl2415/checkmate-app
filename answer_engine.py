@@ -1,44 +1,36 @@
 import json
 
 def load_ingested_chunks():
-    try:
-        with open("chunks.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        print("Failed to load chunks.json:", e)
-        return []
+    with open("chunks.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
-def answer_question(question, keyword=None, section=None, detailed=False):
-    question = question.lower()
-    chunks = load_ingested_chunks()
+def answer_question(question, keyword="", section="All Sections", detailed=False, document="All"):
+    with open("chunks.json", "r", encoding="utf-8") as f:
+        chunks = json.load(f)
+
     results = []
+    question_lower = question.lower()
+    keyword_lower = keyword.lower()
 
     for chunk in chunks:
-        content = chunk.get("content", "").lower()
-        match_score = 0
+        # Filter by section if selected
+        if section != "All Sections" and chunk.get("section_title") != section:
+            continue
 
-        if question in content:
-            match_score += 2
-        elif any(q_word in content for q_word in question.split()):
-            match_score += 1
+        # Filter by document if selected
+        if document != "All" and chunk.get("source") != document:
+            continue
 
-        if keyword:
-            keyword = keyword.lower()
-            if keyword in content:
-                match_score += 1
+        # Apply query and keyword filters
+        content_match = question_lower in chunk.get("content", "").lower()
+        keyword_match = not keyword or keyword_lower in chunk.get("content", "").lower()
 
-        if section and section != "All Sections":
-            section_title = chunk.get("section_title", "").lower()
-            if section.lower() not in section_title:
-                continue  # skip this chunk if section doesn't match
+        if content_match and keyword_match:
+            results.append(chunk)
 
-        if match_score > 0:
-            result = {
-                "source": chunk.get("source", "Unknown"),
-                "section": chunk.get("section_title", "Unknown"),
-                "content": chunk.get("content", "No content found"),
-            }
-            results.append(result)
+    # Optionally reduce results
+    if not detailed:
+        for r in results:
+            r["content"] = r["content"][:200] + "..." if len(r["content"]) > 200 else r["content"]
 
-    # Sort results by match_score descending
-    return sorted(results, key=lambda x: x["content"].count(question), reverse=True)
+    return results
