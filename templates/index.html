@@ -3,92 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <title>Checkmate: DSAT Decision Support</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            display: flex;
             margin: 0;
             padding: 20px;
             background: #f9f9f9;
         }
-        .container {
-            display: flex;
-            flex-direction: row;
-            gap: 30px;
+        .sidebar {
+            width: 320px;
+            padding-right: 20px;
         }
-        .left-panel {
-            width: 30%;
-            padding: 20px;
-            background-color: #fff;
-            border: 1px solid #ccc;
+        .results {
+            flex-grow: 1;
         }
-        .left-panel label, .left-panel input, .left-panel select, .left-panel button {
-            display: block;
+        h1 {
+            color: #600000;
+        }
+        input[type="text"], select {
             width: 100%;
-            margin-bottom: 15px;
+            padding: 8px;
+            margin: 6px 0;
+            box-sizing: border-box;
         }
-        .right-panel {
-            width: 70%;
+        .checkbox {
+            margin-top: 8px;
         }
-        .result-box {
-            padding: 10px;
-            border-bottom: 1px solid #ccc;
-            background-color: #fff;
-            margin-bottom: 10px;
-        }
-        button {
+        .submit-btn {
             background-color: #600000;
             color: white;
-            font-weight: bold;
             padding: 10px;
             border: none;
+            width: 100%;
             cursor: pointer;
+            font-weight: bold;
+        }
+        .card {
+            background: white;
+            border-left: 5px solid #600000;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .meta {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .count {
+            margin: 10px 0;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="left-panel">
-            <h2>Welcome to Checkmate</h2>
-            <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
-            <form method="POST">
-                <label for="query">Enter your question or keyword:</label>
-                <input type="text" id="query" name="query" placeholder="e.g. KSA, Training Gap" required>
-
-                <label for="document">Filter by document (optional):</label>
-                <select name="document" id="document">
-                    <option value="All">All</option>
-                    {% for doc in documents %}
-                    <option value="{{ doc }}">{{ doc }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="keyword">Secondary keyword (optional):</label>
-                <input type="text" id="keyword" name="keyword" placeholder="e.g. Evaluation, Scoping">
-
-                <label>
-                    <input type="checkbox" name="detailed" {% if detailed %}checked{% endif %}>
-                    Show detailed results only
-                </label>
-
-                <button type="submit">Search</button>
-            </form>
-        </div>
-
-        <div class="right-panel">
-            {% if results %}
-                <h2>Answer: {{ results|length }} results found</h2>
-                {% for result in results %}
-                <div class="result-box">
-                    <p><strong>Source:</strong> {{ result.source }}</p>
-                    <p><strong>Section:</strong> {{ result.section }}</p>
-                    <p><strong>Content:</strong> {{ result.content }}</p>
-                </div>
+    <div class="sidebar">
+        <h2>Welcome to Checkmate</h2>
+        <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
+        <form method="post">
+            <label>Enter your question or keyword:</label>
+            <input type="text" name="question" value="{{ query }}" placeholder="e.g. KSA, Training Gap">
+            
+            <label>Filter by document (optional):</label>
+            <select name="document">
+                {% for doc in all_documents %}
+                <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
                 {% endfor %}
-            {% elif query %}
-                <h2>No matching results found.</h2>
-            {% endif %}
+            </select>
+            
+            <label>Secondary keyword (optional):</label>
+            <input type="text" name="keyword" value="{{ keyword }}" placeholder="e.g. Evaluation, Scoping">
+
+            <label>Filter by section:</label>
+            <select name="section">
+                {% for sec in all_sections %}
+                <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="checkbox">
+                <input type="checkbox" name="detailed" {% if detailed %}checked{% endif %}> Show detailed results only
+            </div>
+            <br>
+            <input type="submit" value="Search" class="submit-btn">
+        </form>
+    </div>
+    <div class="results">
+        {% if results %}
+        <div class="count">Answer: {{ result_count }} results found</div>
+        {% for result in results %}
+        <div class="card">
+            <div class="meta">Source: {{ result.source }}</div>
+            <div class="meta">Section: {{ result.section_title }}</div>
+            <div><strong>Content:</strong> {{ result.content }}</div>
         </div>
+        {% endfor %}
+        {% endif %}
     </div>
 </body>
 </html>
