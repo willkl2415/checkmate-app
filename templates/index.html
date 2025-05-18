@@ -2,59 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Welcome to Checkmate</title>
+    <title>Checkmate – DSAT Assistant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
             display: flex;
+            margin: 0;
+            padding: 0;
         }
         .sidebar {
-            width: 350px;
-            background: #f7f7f7;
+            width: 30%;
             padding: 20px;
-            border-right: 1px solid #ddd;
+            background-color: #f0f0f0;
+            height: 100vh;
+            box-sizing: border-box;
         }
         .content {
-            flex-grow: 1;
+            width: 70%;
             padding: 20px;
-        }
-        input, select, textarea, button {
-            width: 100%;
-            padding: 8px;
-            margin: 6px 0 12px;
+            overflow-y: auto;
+            height: 100vh;
             box-sizing: border-box;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .result {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ccc;
         }
         label {
             font-weight: bold;
         }
-        .result {
-            margin-bottom: 24px;
-            padding: 12px;
-            border-bottom: 1px solid #ccc;
+        input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 12px 0;
+            box-sizing: border-box;
         }
-        .source {
-            font-size: 0.9em;
-            color: #555;
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-        .section {
-            font-weight: bold;
-            margin-bottom: 6px;
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h2>Welcome to Checkmate</h2>
+        <h1>Welcome to Checkmate</h1>
         <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
         <form method="POST">
-            <label for="question">Enter your question or keyword:</label>
-            <input type="text" id="question" name="question" placeholder="e.g. KSA, Training Gap" required>
+            <label for="keyword">Enter your question or keyword:</label>
+            <input type="text" id="keyword" name="keyword" placeholder="e.g. KSA, Training Gap" required>
 
-            <label for="source_filter">Filter by document (optional):</label>
-            <select name="source_filter">
-                <option value="">All</option>
-                {% for source in source_list %}
+            <label for="document">Filter by document (optional):</label>
+            <select id="document" name="document">
+                <option value="All">All</option>
+                {% for source in sources %}
                     <option value="{{ source }}">{{ source }}</option>
                 {% endfor %}
             </select>
@@ -62,7 +73,10 @@
             <label for="secondary_keyword">Secondary keyword (optional):</label>
             <input type="text" id="secondary_keyword" name="secondary_keyword" placeholder="e.g. Evaluation, Scoping">
 
-            <label><input type="checkbox" name="long_answers" checked> Show detailed results only</label>
+            <p>
+                <input type="checkbox" id="detailed" name="detailed" {% if detailed %}checked{% endif %}>
+                <label for="detailed">Show detailed results only</label>
+            </p>
 
             <button type="submit">Search</button>
         </form>
@@ -70,17 +84,14 @@
 
     <div class="content">
         {% if results %}
-            <h2>Answer: {{ total_matches }} result{{ total_matches != 1 and 's' or '' }} found</h2>
+            <h2>Answer: results found</h2>
             {% for result in results %}
                 <div class="result">
-                    <div class="source"><strong>Source:</strong> {{ result.source }}</div>
-                    {% if result.section %}
-                        <div class="section">Section: {{ result.section }}</div>
-                    {% endif %}
-                    <div class="text">{{ result.text }}</div>
+                    <p><strong>Source:</strong> {{ result.source }}</p>
+                    <p>{{ result.content }}</p>
                 </div>
             {% endfor %}
-        {% elif total_matches == 0 %}
+        {% elif results is not none %}
             <h2>No matching results found.</h2>
         {% endif %}
     </div>
