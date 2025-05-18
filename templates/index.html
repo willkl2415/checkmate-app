@@ -2,98 +2,101 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Checkmate – DSAT Assistant</title>
+    <title>Checkmate: DSAT Decision Support</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
+            background-color: #f6f6f6;
             margin: 0;
             padding: 0;
         }
-        .sidebar {
-            width: 30%;
-            padding: 20px;
-            background-color: #f0f0f0;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-        .content {
-            width: 70%;
-            padding: 20px;
-            overflow-y: auto;
-            height: 100vh;
-            box-sizing: border-box;
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 40px;
         }
         h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
+            text-align: center;
+            color: #700000;
         }
-        .result {
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ccc;
+        form {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
         }
-        label {
-            font-weight: bold;
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
         }
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            margin: 6px 0 12px 0;
-            box-sizing: border-box;
+        select {
+            padding: 10px;
+            font-size: 16px;
         }
         button {
-            padding: 10px 15px;
-            background-color: #007BFF;
+            padding: 12px 20px;
+            background-color: #700000;
             color: white;
             border: none;
             cursor: pointer;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #550000;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .chunk {
+            background-color: white;
+            border-left: 5px solid #700000;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.1);
+        }
+        .chunk strong {
+            display: block;
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h1>Welcome to Checkmate</h1>
-        <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
-        <form method="POST">
-            <label for="keyword">Enter your question or keyword:</label>
-            <input type="text" id="keyword" name="keyword" placeholder="e.g. KSA, Training Gap" required>
+<div class="container">
+    <h1>Checkmate: DSAT Decision Support</h1>
+    <form method="POST">
+        <input type="text" name="query" placeholder="Ask your DSAT or JSP 822 question..." required>
+        <button type="submit">Submit</button>
+    </form>
 
-            <label for="document">Filter by document (optional):</label>
-            <select id="document" name="document">
-                <option value="All">All</option>
-                {% for source in sources %}
-                    <option value="{{ source }}">{{ source }}</option>
-                {% endfor %}
-            </select>
+    {% if results %}
+        <label for="filter">Filter by section:</label>
+        <select id="filter" onchange="filterChunks()">
+            <option value="all">All Sections</option>
+            {% for heading in results | map(attribute='heading') | unique %}
+                <option value="{{ heading }}">{{ heading }}</option>
+            {% endfor %}
+        </select>
 
-            <label for="secondary_keyword">Secondary keyword (optional):</label>
-            <input type="text" id="secondary_keyword" name="secondary_keyword" placeholder="e.g. Evaluation, Scoping">
-
-            <p>
-                <input type="checkbox" id="detailed" name="detailed" {% if detailed %}checked{% endif %}>
-                <label for="detailed">Show detailed results only</label>
-            </p>
-
-            <button type="submit">Search</button>
-        </form>
-    </div>
-
-    <div class="content">
-        {% if results %}
-            <h2>Answer: results found</h2>
+        <div class="results">
             {% for result in results %}
-                <div class="result">
-                    <p><strong>Source:</strong> {{ result.source }}</p>
-                    <p>{{ result.content }}</p>
+                <div class="chunk" data-heading="{{ result.heading }}">
+                    <strong>Source:</strong> {{ result.source }}<br>
+                    <strong>Section:</strong> {{ result.heading }}<br>
+                    <strong>Content:</strong> {{ result.content }}
                 </div>
             {% endfor %}
-        {% elif results is not none %}
-            <h2>No matching results found.</h2>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function filterChunks() {
+    const selected = document.getElementById('filter').value;
+    const chunks = document.querySelectorAll('.chunk');
+    chunks.forEach(chunk => {
+        const heading = chunk.getAttribute('data-heading');
+        chunk.style.display = (selected === 'all' || heading === selected) ? 'block' : 'none';
+    });
+}
+</script>
 </body>
 </html>
