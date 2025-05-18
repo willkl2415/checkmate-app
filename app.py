@@ -4,7 +4,7 @@ from answer_engine import answer_question, get_available_sources
 
 app = Flask(__name__)
 
-# Load chunks from JSON file
+# Load chunks from JSON
 with open("chunks.json", "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
