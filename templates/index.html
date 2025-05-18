@@ -1,52 +1,33 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Checkmate DSAT Assistant</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; display: flex; }
-        form { margin-right: 50px; width: 300px; }
-        .results { flex-grow: 1; }
-        label { font-weight: bold; display: block; margin-top: 20px; }
-        .chunk { margin-bottom: 30px; padding: 10px; border-left: 5px solid #888; background: #f5f5f5; }
-    </style>
+    <title>Checkmate Assistant</title>
 </head>
 <body>
+    <h1>Checkmate: DSAT Query System</h1>
     <form method="post">
-        <h2>Welcome to Checkmate</h2>
-        <p>This assistant helps you instantly search through complex training, policy, or operational documents using simple keywords and filters.</p>
-
-        <label for="keyword">Enter your question or keyword:</label>
-        <input type="text" id="keyword" name="keyword" value="{{ request.form.keyword }}" style="width:100%;" placeholder="e.g. KSA, Training Gap">
-
-        <label for="source_filter">Filter by document (optional):</label>
-        <select name="source_filter" id="source_filter" style="width:100%;">
-            <option value="All">All</option>
-            {% for source in sources %}
-                <option value="{{ source }}" {% if source == selected_source %}selected{% endif %}>{{ source }}</option>
+        <label>Question:</label><br>
+        <textarea name="question" rows="3" cols="80">{{ question }}</textarea><br><br>
+        <label>Keyword:</label>
+        <input type="text" name="keyword" value="{{ keyword }}"><br><br>
+        <label>Filter by Section:</label>
+        <select name="section">
+            <option value="">All Sections</option>
+            {% for title in section_titles %}
+            <option value="{{ title }}" {% if selected_section == title %}selected{% endif %}>{{ title }}</option>
             {% endfor %}
-        </select>
-
-        <label for="secondary_keyword">Secondary keyword (optional):</label>
-        <input type="text" id="secondary_keyword" name="secondary_keyword" value="{{ secondary_keyword }}" style="width:100%;" placeholder="e.g. Evaluation, Scoping">
-
-        <label><input type="checkbox" name="detailed_only" {% if detailed_only %}checked{% endif %}> Show detailed results only</label>
-
-        <button type="submit" style="margin-top: 20px;">Search</button>
+        </select><br><br>
+        <input type="submit" value="Submit">
     </form>
-
-    <div class="results">
-        {% if results %}
-            <h2>Answer: results found</h2>
-            {% for chunk in results %}
-                <div class="chunk">
-                    <strong>Source:</strong> {{ chunk.source }}<br>
-                    {{ chunk.text }}
-                </div>
-            {% endfor %}
-        {% elif request.method == 'POST' %}
-            <h2>No matching results found.</h2>
-        {% endif %}
-    </div>
+    <hr>
+    {% if results %}
+        <h2>Answer: results found</h2>
+        {% for item in results %}
+            <p><strong>Source:</strong> {{ item.source }}</p>
+            <p><strong>Section:</strong> {{ item.heading }}</p>
+            <p>{{ item.content }}</p>
+            <hr>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

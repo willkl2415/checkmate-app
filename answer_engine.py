@@ -1,25 +1,15 @@
-
-def answer_question(keyword, selected_source, secondary_keyword, chunks, detailed_only):
-    keyword = keyword.lower()
-    secondary_keyword = secondary_keyword.lower()
-    results = []
+def answer_question(question, keyword, section, chunks):
+    filtered = []
 
     for chunk in chunks:
-        text = chunk["text"].lower()
-        if keyword in text and (selected_source == "All" or chunk["source"] == selected_source):
-            if secondary_keyword:
-                if secondary_keyword in text:
-                    results.append(chunk)
-            else:
-                results.append(chunk)
+        if (keyword.lower() in chunk['content'].lower() or not keyword) and            (section == chunk['heading'] or not section):
+            filtered.append({
+                "source": chunk["source"],
+                "heading": chunk["heading"],
+                "content": chunk["content"]
+            })
 
-    if detailed_only:
-        results = [r for r in results if len(r["text"].split()) > 40]
-
-    return results
+    return filtered
 
 def get_available_sources(chunks):
-    sources = set()
-    for chunk in chunks:
-        sources.add(chunk["source"])
-    return sorted(sources)
+    return sorted(set(chunk["source"] for chunk in chunks))
