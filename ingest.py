@@ -1,37 +1,34 @@
 import os
-import re
+import json
+import docx
 
-def load_documents(directory="chunks"):
-    """
-    Loads and structures all .txt files from the specified directory.
-    Returns a list of dictionaries with 'source', 'section', and 'text' keys.
-    """
-    documents = []
+CHUNK_SIZE = 800  # characters
 
-    for filename in os.listdir(directory):
-        if filename.endswith(".txt"):
-            source_path = os.path.join(directory, filename)
-            with open(source_path, "r", encoding="utf-8") as f:
-                content = f.read()
+def extract_text_from_docx(file_path):
+    doc = docx.Document(file_path)
+    return "\n".join([para.text.strip() for para in doc.paragraphs if para.text.strip()])
 
-            # Split by numbered sections (e.g. 1.1, 2.3.4)
-            sections = re.split(r"(?m)^\s*(\d+(?:\.\d+)+)\s+", content)
-            if len(sections) < 2:
-                # No section numbers found, treat as flat document
-                documents.append({
+def split_into_chunks(text, size):
+    return [text[i:i+size] for i in range(0, len(text), size)]
+
+def load_documents(folder="."):
+    docs = []
+    for filename in os.listdir(folder):
+        if filename.endswith(".docx") and not filename.startswith("~$"):
+            full_path = os.path.join(folder, filename)
+            text = extract_text_from_docx(full_path)
+            chunks = split_into_chunks(text, CHUNK_SIZE)
+            for i, chunk in enumerate(chunks):
+                docs.append({
                     "source": filename,
-                    "section": None,
-                    "text": content.strip()
+                    "heading": f"Section {i+1}",
+                    "content": chunk,
+                    "chunk_id": f"{filename}_chunk_{i+1}"
                 })
-            else:
-                # Rebuild sections from matches
-                for i in range(1, len(sections) - 1, 2):
-                    section = sections[i]
-                    text = sections[i + 1].strip()
-                    documents.append({
-                        "source": filename,
-                        "section": section,
-                        "text": text
-                    })
+    return docs
 
-    return documents
+if __name__ == "__main__":
+    all_chunks = load_documents()
+    with open("chunks.json", "w", encoding="utf-8") as f:
+        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+    print(f"✅ Ingested {len(all_chunks)} chunks into chunks.json")
