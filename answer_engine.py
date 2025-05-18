@@ -1,37 +1,36 @@
-# answer_engine.py
+import re
 
-def answer_question(query, chunks, secondary_keyword=None, detailed=False):
-    if not query:
-        return []
-
-    query_lower = query.lower()
-    secondary_lower = secondary_keyword.lower() if secondary_keyword else None
-
-    filtered = []
+def answer_question(query, chunks, keyword=None, secondary_keyword=None, detailed_only=False):
+    results = []
 
     for chunk in chunks:
-        text = chunk['content'].lower()
+        text = chunk["text"]
+        if detailed_only and len(text) < 100:
+            continue
 
-        # Check for primary keyword
-        primary_match = query_lower in text
+        match_found = False
 
-        # Check for secondary keyword if provided
-        secondary_match = True  # Default to True if no secondary keyword
-        if secondary_lower:
-            secondary_match = secondary_lower in text
+        if keyword and secondary_keyword:
+            if re.search(rf"\b{re.escape(keyword)}\b", text, re.IGNORECASE) and re.search(rf"\b{re.escape(secondary_keyword)}\b", text, re.IGNORECASE):
+                match_found = True
+        elif keyword:
+            if re.search(rf"\b{re.escape(keyword)}\b", text, re.IGNORECASE):
+                match_found = True
+        elif secondary_keyword:
+            if re.search(rf"\b{re.escape(secondary_keyword)}\b", text, re.IGNORECASE):
+                match_found = True
+        elif query:
+            if re.search(rf"\b{re.escape(query)}\b", text, re.IGNORECASE):
+                match_found = True
 
-        if primary_match and secondary_match:
-            if detailed:
-                filtered.append(chunk)
-            else:
-                # Return a minimal version
-                filtered.append({
-                    "source": chunk["source"],
-                    "heading": chunk["heading"]
-                })
+        if match_found:
+            results.append({
+                "source": chunk["source"],
+                "content": text
+            })
 
-    return filtered
+    return results
 
 
 def get_available_sources(chunks):
-    return list(sorted(set(chunk['source'] for chunk in chunks)))
+    return sorted(list({chunk["source"] for chunk in chunks}))
