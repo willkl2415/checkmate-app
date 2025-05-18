@@ -1,38 +1,41 @@
-import json
-import re
+from difflib import SequenceMatcher
 
-# Load chunks.json on import
-with open("chunks.json", "r", encoding="utf-8") as f:
-    chunks = json.load(f)
+def answer_question(query, chunks, source_filter=None, secondary_filter=None, detailed=False):
+    query = query.lower()
+    results = []
 
-def clean_text(text):
-    return re.sub(r"\s+", " ", text).strip().lower()
-
-def answer_question(query, chunks, doc_filter=None, secondary=None, detailed=False):
-    query = clean_text(query)
-    if secondary:
-        secondary = clean_text(secondary)
-
-    matches = []
     for chunk in chunks:
-        content = clean_text(chunk["content"])
-        heading = clean_text(chunk.get("heading", ""))
-        source = chunk.get("source", "")
+        text = chunk["content"].lower()
+        if query in text:
+            if source_filter and chunk["source"] != source_filter:
+                continue
+            if secondary_filter and secondary_filter.lower() not in text:
+                continue
+            results.append({
+                "content": chunk["content"],
+                "source": chunk["source"],
+                "heading": chunk.get("heading", "N/A"),
+                "chunk_id": chunk.get("chunk_id", "N/A")
+            })
 
-        if doc_filter and source != doc_filter:
-            continue
+    if not results and not detailed:
+        # Try partial match if no exact match and not in detailed mode
+        for chunk in chunks:
+            text = chunk["content"].lower()
+            ratio = SequenceMatcher(None, query, text).ratio()
+            if ratio > 0.6:
+                if source_filter and chunk["source"] != source_filter:
+                    continue
+                if secondary_filter and secondary_filter.lower() not in text:
+                    continue
+                results.append({
+                    "content": chunk["content"],
+                    "source": chunk["source"],
+                    "heading": chunk.get("heading", "N/A"),
+                    "chunk_id": chunk.get("chunk_id", "N/A")
+                })
 
-        primary_match = query in content or query in heading
-        secondary_match = secondary in content or secondary in heading if secondary else False
+    return results
 
-        if detailed:
-            if primary_match and (not secondary or secondary_match):
-                matches.append(chunk)
-        else:
-            if primary_match or (secondary and secondary_match):
-                matches.append(chunk)
-
-    return matches
-
-def get_available_sources():
+def get_available_sources(chunks):
     return sorted(set(chunk.get("source", "") for chunk in chunks if "source" in chunk))
