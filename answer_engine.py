@@ -1,18 +1,33 @@
-def answer_question(question, chunks, source=None, secondary_keyword=None, detailed=False):
-    question_lower = question.lower()
-    results = []
+import json
+import re
 
+# Load chunks from JSON
+with open("chunks.json", "r", encoding="utf-8") as f:
+    chunks = json.load(f)
+
+def answer_question(question, source=None, secondary_keyword=None):
+    # Normalise question for case-insensitive matching
+    question_lower = question.lower()
+
+    matched_chunks = []
     for chunk in chunks:
         content_lower = chunk["content"].lower()
-        heading_lower = chunk.get("heading", "").lower()
-        source_match = (source == "All" or chunk.get("source", "") == source)
-        secondary_match = (not secondary_keyword or secondary_keyword.lower() in content_lower)
 
-        if question_lower in content_lower and source_match and secondary_match:
-            results.append({
-                "source": chunk.get("source", "Unknown"),
-                "heading": chunk.get("heading", "Untitled"),
-                "content": chunk["content"] if detailed else None
+        # Match question keyword
+        if question_lower in content_lower:
+            if source and chunk.get("source") != source:
+                continue
+            if secondary_keyword and secondary_keyword.lower() not in content_lower:
+                continue
+
+            matched_chunks.append({
+                "chunk_id": chunk["chunk_id"],
+                "content": chunk["content"],
+                "source": chunk.get("source", "Unknown Source"),
+                "heading": chunk.get("heading", "No Heading")
             })
 
-    return results  # If empty, app.py handles the fallback display
+    return matched_chunks
+
+def get_available_sources(chunks):
+    return sorted(set(chunk["source"] for chunk in chunks if "source" in chunk))
