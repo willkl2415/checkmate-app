@@ -1,1 +1,73 @@
-# Placeholder for templates/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkmate: DSAT Decision Support</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        h1 {
+            color: #660000;
+            text-align: center;
+        }
+        form {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        label {
+            margin-right: 10px;
+        }
+        textarea, input, select {
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 60%;
+        }
+        button, input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #660000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .result-count {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .result {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #660000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Checkmate: DSAT Decision Support</h1>
+    <form method="POST">
+        <input type="text" name="question" placeholder="Ask your DSAT or JSP 822 question..." required><br>
+        <input type="text" name="keyword" placeholder="Optional keyword filter..."><br>
+        <label for="section">Filter by section:</label>
+        <select name="section" id="section">
+            <option value="All Sections">All Sections</option>
+            {% for section in sections %}
+                <option value="{{ section }}" {% if section == selected_section %}selected{% endif %}>{{ section }}</option>
+            {% endfor %}
+        </select><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    {% if results %}
+        <div class="result-count">{{ results|length }} matching results found</div>
+        {% for result in results %}
+            <div class="result">
+                <strong>Source:</strong> {{ result.source }}<br>
+                <strong>Section:</strong> {{ result.section }}<br>
+                <strong>Content:</strong><br> {{ result.content }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
