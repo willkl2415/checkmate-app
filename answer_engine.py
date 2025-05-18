@@ -1,33 +1,35 @@
 import re
 
-def get_available_sources(chunks):
-    return sorted(set(chunk.get("source", "") for chunk in chunks if "source" in chunk))
+def clean_text(text):
+    return re.sub(r'\s+', ' ', text.strip())
+
+def match_chunk(chunk, query, secondary_keyword):
+    content = chunk.get("content", "").lower()
+    heading = chunk.get("heading", "").lower()
+    source = chunk.get("source", "").lower()
+    query = query.lower()
+    secondary_keyword = secondary_keyword.lower()
+
+    return query in content or query in heading or secondary_keyword in content
 
 def answer_question(chunks, query, secondary_keyword):
-    results = []
+    matches = [chunk for chunk in chunks if match_chunk(chunk, query, secondary_keyword)]
 
-    for chunk in chunks:
-        content = chunk.get("content", "")
-        if query.lower() in content.lower():
-            if secondary_keyword:
-                if secondary_keyword.lower() in content.lower():
-                    results.append({
-                        "source": chunk.get("source", ""),
-                        "heading": chunk.get("heading", ""),
-                        "content": highlight_keywords(content, [query, secondary_keyword])
-                    })
-            else:
-                results.append({
-                    "source": chunk.get("source", ""),
-                    "heading": chunk.get("heading", ""),
-                    "content": highlight_keywords(content, [query])
-                })
+    if not matches:
+        return [{
+            "source": "No Match Found",
+            "heading": "No relevant section located",
+            "content": f"No content matched your query: '{query}'"
+        }]
 
-    return results
+    return matches
 
-def highlight_keywords(text, keywords):
-    for keyword in keywords:
-        if keyword:
-            pattern = re.compile(re.escape(keyword), re.IGNORECASE)
-            text = pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", text)
-    return text
+def get_available_sources():
+    import json
+
+    try:
+        with open("chunks.json", "r", encoding="utf-8") as f:
+            chunks = json.load(f)
+            return sorted(set(chunk["source"] for chunk in chunks))
+    except Exception:
+        return []
