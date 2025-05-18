@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkmate Assistant</title>
+</head>
+<body>
+    <h1>Checkmate: DSAT Query System</h1>
+    <form method="post">
+        <label>Question:</label><br>
+        <textarea name="question" rows="3" cols="80">{{ question }}</textarea><br><br>
+        <label>Keyword:</label>
+        <input type="text" name="keyword" value="{{ keyword }}"><br><br>
+        <label>Filter by Section:</label>
+        <select name="section">
+            <option value="">All Sections</option>
+            {% for title in section_titles %}
+            <option value="{{ title }}" {% if selected_section == title %}selected{% endif %}>{{ title }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <hr>
+    {% if results %}
+        <h2>Answer: results found</h2>
+        {% for item in results %}
+            <p><strong>Source:</strong> {{ item.source }}</p>
+            <p><strong>Section:</strong> {{ item.heading }}</p>
+            <p>{{ item.content }}</p>
+            <hr>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>
