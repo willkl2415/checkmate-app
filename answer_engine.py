@@ -1,25 +1,25 @@
-def answer_question(query, chunks, keyword=None, secondary_keyword=None, detailed_only=False):
+
+def answer_question(keyword, selected_source, secondary_keyword, chunks, detailed_only):
+    keyword = keyword.lower()
+    secondary_keyword = secondary_keyword.lower()
     results = []
 
     for chunk in chunks:
-        content_lower = chunk["content"].lower()
-        query_lower = query.lower()
-        keyword_lower = keyword.lower() if keyword else ""
-        secondary_lower = secondary_keyword.lower() if secondary_keyword else ""
-
-        matches_query = query_lower in content_lower if query_lower else True
-        matches_keyword = keyword_lower in content_lower if keyword_lower else True
-        matches_secondary = secondary_lower in content_lower if secondary_lower else True
-
-        if matches_query and matches_keyword and matches_secondary:
-            if detailed_only:
-                if "1.1" in content_lower or "1.2" in content_lower or "analysis" in content_lower:
+        text = chunk["text"].lower()
+        if keyword in text and (selected_source == "All" or chunk["source"] == selected_source):
+            if secondary_keyword:
+                if secondary_keyword in text:
                     results.append(chunk)
             else:
                 results.append(chunk)
 
+    if detailed_only:
+        results = [r for r in results if len(r["text"].split()) > 40]
+
     return results
 
-
 def get_available_sources(chunks):
-    return sorted(set(chunk["source"] for chunk in chunks))
+    sources = set()
+    for chunk in chunks:
+        sources.add(chunk["source"])
+    return sorted(sources)
