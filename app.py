@@ -1,50 +1,62 @@
 from flask import Flask, render_template, request
-from answer_engine import answer_question, load_ingested_chunks
 import json
+import os
+from answer_engine import answer_question
+from ingest import load_ingested_chunks, get_available_sources, get_available_sections
 
 app = Flask(__name__)
 
-# Load all chunks and get unique documents and sections
-all_chunks = load_ingested_chunks()
-all_documents = sorted(set(chunk.get("source", "Unknown") for chunk in all_chunks))
-all_sections = sorted(set(chunk.get("section_title", "Unknown") for chunk in all_chunks))
+CHUNKS_FILE = "chunks.json"
+chunks = []
+
+if os.path.exists(CHUNKS_FILE):
+    with open(CHUNKS_FILE, "r", encoding="utf-8") as f:
+        chunks = json.load(f)
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = []
+    total_results = 0
     query = ""
     keyword = ""
-    section_filter = "All Sections"
-    document_filter = "All"
+    selected_doc = "All"
+    selected_section = "All"
     detailed = False
 
+    documents = get_available_sources(chunks)
+    sections = get_available_sections(chunks)
+
     if request.method == "POST":
-        query = request.form.get("question", "")
-        keyword = request.form.get("keyword", "")
-        section_filter = request.form.get("section", "All Sections")
-        document_filter = request.form.get("document", "All")
-        detailed = bool(request.form.get("detailed"))
+        query = request.form.get("query", "").strip()
+        keyword = request.form.get("keyword", "").strip()
+        selected_doc = request.form.get("document", "All")
+        selected_section = request.form.get("section", "All")
+        detailed = request.form.get("detailed") == "on"
 
         results = answer_question(
-            question=query,
+            chunks,
+            query=query,
             keyword=keyword,
-            section=section_filter,
-            document=document_filter,
-            detailed=detailed
+            document_filter=selected_doc,
+            section_filter=selected_section,
+            detailed=detailed,
         )
+        total_results = len(results)
 
     return render_template(
         "index.html",
         results=results,
+        total_results=total_results,
         query=query,
         keyword=keyword,
-        selected_section=section_filter,
-        selected_document=document_filter,
+        documents=documents,
+        sections=sections.get(selected_doc, []),
+        selected_doc=selected_doc,
+        selected_section=selected_section,
         detailed=detailed,
-        all_sections=["All Sections"] + all_sections,
-        all_documents=["All"] + all_documents,
-        result_count=len(results)
     )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

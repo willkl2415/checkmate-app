@@ -1,135 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Checkmate DSAT Assistant</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f5f5f5;
-        }
-
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-
-        form {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 6px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            width: 450px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        input[type="submit"] {
-            background-color: #003366;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #002244;
-        }
-
-        .checkbox {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .checkbox input {
-            margin-right: 10px;
-        }
-
-        .results {
-            margin-top: 30px;
-        }
-
-        .result-block {
-            background-color: #fff;
-            padding: 16px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.05);
-        }
-
-        .source {
-            font-size: 13px;
-            font-style: italic;
-            color: #666;
-            margin-top: 10px;
-        }
-
-        .result-count {
-            font-weight: bold;
-            margin-bottom: 16px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Checkmate: DSAT Policy Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background-color: #f6f6f6;
+      color: #333;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    form {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background-color: #fff;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin: 1rem 0 0.3rem;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    .checkbox-group {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    .checkbox-group label {
+      margin: 0;
+      margin-left: 0.5rem;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      background-color: #005ea5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background-color: #004b8d;
+    }
+    .results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background-color: #fff;
+      border-radius: 8px;
+    }
+    .result {
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+      background-color: #f0f4f8;
+      border-left: 4px solid #005ea5;
+    }
+    .result strong {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .count {
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <h1>Checkmate: DSAT Decision Support Assistant</h1>
-    <form method="POST">
-        <label for="keyword">Enter your question or keyword</label>
-        <input type="text" id="keyword" name="keyword" value="{{ keyword or '' }}" required>
+  <h1>Checkmate: DSAT Policy Assistant</h1>
+  <form method="POST">
+    <label for="query">Enter your question or keyword</label>
+    <input type="text" id="query" name="query" value="{{ query }}">
 
-        <label for="selected_source">Filter by document (optional)</label>
-        <select id="selected_source" name="selected_source">
-            <option value="">All Documents</option>
-            {% for source in sources %}
-                <option value="{{ source }}" {% if selected_source == source %}selected{% endif %}>{{ source }}</option>
-            {% endfor %}
-        </select>
+    <label for="keyword">Primary keyword (optional)</label>
+    <input type="text" id="keyword" name="keyword" value="{{ keyword }}">
 
-        <label for="selected_section">Filter by contents (optional)</label>
-        <select id="selected_section" name="selected_section">
-            <option value="">All Sections</option>
-            {% if selected_source and available_sections %}
-                {% for section in available_sections %}
-                    <option value="{{ section }}" {% if selected_section == section %}selected{% endif %}>{{ section }}</option>
-                {% endfor %}
-            {% endif %}
-        </select>
+    <label for="document_filter">Filter by document (optional)</label>
+    <select name="document_filter" id="document_filter">
+      <option value="All" {% if document_filter == "All" %}selected{% endif %}>All Documents</option>
+      {% for doc in available_documents %}
+        <option value="{{ doc }}" {% if document_filter == doc %}selected{% endif %}>{{ doc }}</option>
+      {% endfor %}
+    </select>
 
-        <div class="checkbox">
-            <input type="checkbox" id="show_detailed_only" name="show_detailed_only" {% if show_detailed_only %}checked{% endif %}>
-            <label for="show_detailed_only">Show detailed results only</label>
-        </div>
+    <label for="section_filter">Filter by contents (optional)</label>
+    <select name="section_filter" id="section_filter">
+      <option value="All" {% if section_filter == "All" %}selected{% endif %}>All Sections</option>
+      {% for section in available_sections %}
+        <option value="{{ section }}" {% if section_filter == section %}selected{% endif %}>{{ section }}</option>
+      {% endfor %}
+    </select>
 
-        <input type="submit" value="Search">
-    </form>
+    <div class="checkbox-group">
+      <input type="checkbox" id="show_detailed" name="show_detailed" {% if show_detailed %}checked{% endif %}>
+      <label for="show_detailed">Show detailed results only</label>
+    </div>
 
-    {% if results %}
-        <div class="results">
-            <div class="result-count">{{ results|length }} results found</div>
-            {% for result in results %}
-                <div class="result-block">
-                    {{ result.content }}
-                    <div class="source">Source: {{ result.source }}</div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+    <button type="submit">Search</button>
+  </form>
+
+  {% if results %}
+  <div class="results">
+    <div class="count">Results found: {{ result_count }}</div>
+    {% for r in results %}
+      <div class="result">
+        <strong>Source:</strong> {{ r.document }} — <em>{{ r.section }}</em>
+        {% if show_detailed %}
+          <div>{{ r.content }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </body>
 </html>
