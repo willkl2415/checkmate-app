@@ -4,34 +4,73 @@
   <meta charset="UTF-8" />
   <title>Check-Mate</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      display: grid;
-      grid-template-columns: 320px auto;
+      display: flex;
       height: 100vh;
       overflow: hidden;
     }
 
     #question-form {
+      flex-shrink: 0;
       width: 320px;
+      min-width: 320px;
       padding: 20px;
       background-color: #f9f9f9;
       border-right: 1px solid #ccc;
-      box-sizing: border-box;
     }
 
     #results-container {
+      flex-grow: 1;
       padding: 30px 40px;
       background-color: #fffde7;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #intro {
+      background-color: #fff3cd;
+      padding: 25px;
+      margin-bottom: 30px;
+      border-left: 5px solid #ffcc00;
       width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
+      max-width: 960px;
+    }
+
+    #intro p {
+      margin: 0 0 12px 0;
+      line-height: 1.6;
+    }
+
+    .result-container {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .result {
+      background-color: #ffffff;
+      border-left: 5px solid #007acc;
+      margin-bottom: 20px;
+      padding: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow-wrap: break-word;
     }
 
     h1 {
       margin-top: 0;
+    }
+
+    h2 {
+      text-align: left;
+      max-width: 960px;
+      width: 100%;
     }
 
     label {
@@ -45,7 +84,6 @@
       padding: 8px;
       margin-top: 4px;
       margin-bottom: 12px;
-      box-sizing: border-box;
     }
 
     input[type="checkbox"] {
@@ -63,44 +101,6 @@
 
     button:hover {
       background-color: #254d99;
-    }
-
-    .result {
-      background-color: #ffffff;
-      border-left: 5px solid #007acc;
-      margin-bottom: 20px;
-      padding: 15px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    .result strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    #intro {
-      background-color: #fff3cd;
-      padding: 25px;
-      margin-bottom: 30px;
-      border-left: 5px solid #ffcc00;
-      max-width: 960px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #intro p {
-      margin: 0 0 12px 0;
-      line-height: 1.6;
-    }
-
-    h2 {
-      max-width: 960px;
-      margin: auto;
-    }
-
-    .result-container {
-      max-width: 960px;
-      margin: auto;
     }
   </style>
 </head>
