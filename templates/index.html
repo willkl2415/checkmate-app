@@ -1,126 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Checkmate: DSAT Policy Assistant</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 2rem;
-      background-color: #f6f6f6;
-      color: #333;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    form {
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background-color: #fff;
-      border-radius: 8px;
-    }
-    label {
-      display: block;
-      margin: 1rem 0 0.3rem;
-    }
-    input[type="text"], select {
-      width: 100%;
-      padding: 0.6rem;
-      margin-bottom: 0.5rem;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    .checkbox-group {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-    }
-    .checkbox-group label {
-      margin: 0;
-      margin-left: 0.5rem;
-    }
-    button {
-      padding: 0.8rem 1.5rem;
-      font-size: 1rem;
-      background-color: #005ea5;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-    button:hover {
-      background-color: #004b8d;
-    }
-    .results {
-      margin-top: 2rem;
-      padding: 1rem;
-      background-color: #fff;
-      border-radius: 8px;
-    }
-    .result {
-      margin-bottom: 1.2rem;
-      padding: 1rem;
-      background-color: #f0f4f8;
-      border-left: 4px solid #005ea5;
-    }
-    .result strong {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-    .count {
-      margin-bottom: 1rem;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Checkmate — DSAT Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-right: 1px solid #ddd;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .result-block {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-left: 4px solid #007bff;
+        }
+
+        .result-block h3 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+
+        .result-meta {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-group {
+            margin-top: 10px;
+        }
+
+        .summary-bar {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .intro {
+            font-size: 14px;
+            background: #fff7e6;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Checkmate: DSAT Policy Assistant</h1>
-  <form method="POST">
-    <label for="query">Enter your question or keyword</label>
-    <input type="text" id="query" name="query" value="{{ query }}">
+    <div class="container">
+        <div class="sidebar">
+            <h1>Checkmate</h1>
+            <form method="POST">
+                <label for="query">Enter your question or keyword:</label>
+                <input type="text" name="query" id="query" value="{{ query }}">
 
-    <label for="keyword">Primary keyword (optional)</label>
-    <input type="text" id="keyword" name="keyword" value="{{ keyword }}">
+                <label for="document_filter">Filter by document (optional):</label>
+                <select name="document_filter" id="document_filter" onchange="this.form.submit()">
+                    <option value="All" {% if document_filter == 'All' %}selected{% endif %}>All documents</option>
+                    {% for doc in available_documents %}
+                        <option value="{{ doc }}" {% if document_filter == doc %}selected{% endif %}>{{ doc }}</option>
+                    {% endfor %}
+                </select>
 
-    <label for="document_filter">Filter by document (optional)</label>
-    <select name="document_filter" id="document_filter">
-      <option value="All" {% if document_filter == "All" %}selected{% endif %}>All Documents</option>
-      {% for doc in available_documents %}
-        <option value="{{ doc }}" {% if document_filter == doc %}selected{% endif %}>{{ doc }}</option>
-      {% endfor %}
-    </select>
+                <label for="section_filter">Filter by contents (optional):</label>
+                <select name="section_filter" id="section_filter">
+                    <option value="All" {% if section_filter == 'All' %}selected{% endif %}>All sections</option>
+                    {% for section in available_sections %}
+                        <option value="{{ section }}" {% if section_filter == section %}selected{% endif %}>{{ section }}</option>
+                    {% endfor %}
+                </select>
 
-    <label for="section_filter">Filter by contents (optional)</label>
-    <select name="section_filter" id="section_filter">
-      <option value="All" {% if section_filter == "All" %}selected{% endif %}>All Sections</option>
-      {% for section in available_sections %}
-        <option value="{{ section }}" {% if section_filter == section %}selected{% endif %}>{{ section }}</option>
-      {% endfor %}
-    </select>
+                <div class="checkbox-group">
+                    <input type="checkbox" name="show_detailed" id="show_detailed" {% if show_detailed %}checked{% endif %}>
+                    <label for="show_detailed">Show detailed results only</label>
+                </div>
 
-    <div class="checkbox-group">
-      <input type="checkbox" id="show_detailed" name="show_detailed" {% if show_detailed %}checked{% endif %}>
-      <label for="show_detailed">Show detailed results only</label>
+                <input type="submit" value="Search">
+            </form>
+        </div>
+
+        <div class="main-content">
+            <div class="intro">
+                <strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).<br><br>
+                Instead of navigating hundreds of pages manually, users pose a question – and Check-Mate responds with precise, context-grounded answers drawn directly from structured, authoritative sources.<br><br>
+                Typically, manual searches through complex documents can take between 10 to 30 minutes. Check-Mate delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.<br><br>
+                Engineered to align with the core logic and governance principles of SAT and DSAT, Check-Mate supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.
+            </div>
+
+            {% if results %}
+                <div class="summary-bar">
+                    Number of search results: {{ result_count }}
+                </div>
+                {% for result in results %}
+                    <div class="result-block">
+                        <div class="result-meta">
+                            <strong>Document:</strong> {{ result.document }}<br>
+                            <strong>Section:</strong> {{ result.section }}
+                        </div>
+                        {% if show_detailed %}
+                            <div>{{ result.content }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% elif request.method == 'POST' %}
+                <p><em>No results found.</em></p>
+            {% endif %}
+        </div>
     </div>
-
-    <button type="submit">Search</button>
-  </form>
-
-  {% if results %}
-  <div class="results">
-    <div class="count">Results found: {{ result_count }}</div>
-    {% for r in results %}
-      <div class="result">
-        <strong>Source:</strong> {{ r.document }} — <em>{{ r.section }}</em>
-        {% if show_detailed %}
-          <div>{{ r.content }}</div>
-        {% endif %}
-      </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 </body>
 </html>

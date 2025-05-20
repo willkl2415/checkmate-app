@@ -4,15 +4,12 @@ from answer_engine import answer_question
 
 app = Flask(__name__)
 
-# Load chunks from file once on startup
 with open("chunks.json", "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
-# Get list of unique documents
 def get_available_documents():
     return sorted(set(chunk["document"] for chunk in chunks))
 
-# Get list of unique sections for a selected document
 def get_sections_for_document(document_name):
     return sorted(set(
         chunk["section"] for chunk in chunks

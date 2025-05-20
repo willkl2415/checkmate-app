@@ -1,32 +1,27 @@
-def answer_question(
-    chunks,
-    query="",
-    keyword="",
-    source_filter="All",
-    section_filter="All",
-    detailed=False
-):
+from difflib import SequenceMatcher
+
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+def answer_question(chunks, query="", keyword="", document_filter="All", section_filter="All", detailed=False):
     results = []
+    seen = set()
 
     for chunk in chunks:
-        # Apply filters
-        if source_filter != "All" and chunk["document"] != source_filter:
+        if document_filter != "All" and chunk["document"] != document_filter:
             continue
         if section_filter != "All" and chunk["section"] != section_filter:
             continue
 
-        match = False
-
-        if query and query.lower() in chunk["content"].lower():
-            match = True
+        if query and (query.lower() in chunk["content"].lower() or similar(query.lower(), chunk["content"].lower()) > 0.6):
+            match_key = (chunk["document"], chunk["section"], chunk["content"][:60])
+            if match_key not in seen:
+                results.append(chunk)
+                seen.add(match_key)
         elif keyword and keyword.lower() in chunk["content"].lower():
-            match = True
-
-        if match:
-            results.append({
-                "document": chunk["document"],
-                "section": chunk["section"],
-                "content": chunk["content"] if detailed else chunk["content"].split(".")[0]
-            })
+            match_key = (chunk["document"], chunk["section"], chunk["content"][:60])
+            if match_key not in seen:
+                results.append(chunk)
+                seen.add(match_key)
 
     return results
