@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Check-Mate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .sidebar {
+            width: 400px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 30px 40px;
+            background-color: #fffbe6;
+            margin-left: 10px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .results {
+            padding: 30px 40px;
+            background-color: #ffffff;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="checkbox"] {
+            margin-bottom: 16px;
+        }
+
+        button,
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: royalblue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+        .search-result {
+            border-left: 5px solid royalblue;
+            padding: 10px;
+            margin-bottom: 16px;
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Check-Mate</h2>
+        <form method="POST">
+            <label for="keyword"><strong>Enter your question or keyword:</strong></label><br>
+            <input type="text" id="keyword" name="keyword" value="{{ keyword }}"><br>
+
+            <label for="document"><strong>Filter by document (optional):</strong></label><br>
+            <select id="document" name="document">
+                <option value="">All documents</option>
+                {% for doc in documents %}
+                    <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
+                {% endfor %}
+            </select><br>
+
+            <label for="section"><strong>Filter by contents (optional):</strong></label><br>
+            <select id="section" name="section">
+                <option value="">All sections</option>
+                {% for section in sections %}
+                    <option value="{{ section }}" {% if section == selected_section %}selected{% endif %}>{{ section }}</option>
+                {% endfor %}
+            </select><br>
+
+            <input type="checkbox" id="detailed" name="detailed" {% if detailed %}checked{% endif %}>
+            <label for="detailed">Show detailed results only</label><br>
+
+            <input type="submit" value="Search">
+        </form>
+    </div>
+
+    <div class="content">
+        <p><strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+        <p>Inspired by the strategic finality of the term, <strong>Check-Mate</strong> enables you to instantly search, filter, and interrogate huge volumes of training, policy, guidance, and operational documents using natural language, intuitive keywords, and intelligent filters.</p>
+        <p>Instead of navigating hundreds of pages manually, users pose a question – and <strong>Check-Mate</strong> responds with precise, context-grounded answers drawn directly from structured, authoritative sources, including (but not limited to) procedures; policy; frameworks; national and international standards; guidance, and validated best practice.</p>
+        <p>Typically, manual searches through complex documents can take anything between 10 to 30 minutes per query. <strong>Check-Mate</strong> delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.</p>
+        <p>Engineered to align with the core logic and governance principles of SAT and DSAT, <strong>Check-Mate</strong> supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.</p>
+        <p>In high-stakes systems <strong>Check-Mate</strong> delivers efficiency, speed, accuracy, effectiveness and assurance when it matters most.</p>
+        <p><strong>Check-Mate isn’t just a support tool – it’s the final winning move.</strong></p>
+    </div>
+</body>
+</html>
