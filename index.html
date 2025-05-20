@@ -27,7 +27,7 @@
             flex-grow: 1;
             max-width: calc(100% - 320px);
             padding: 30px 40px;
-            background-color: #fffde7;
+            background-color: #ffffff;
             box-sizing: border-box;
         }
 
@@ -63,13 +63,6 @@
         .result strong {
             display: block;
             margin-bottom: 5px;
-        }
-
-        .intro {
-            background-color: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 20px;
-            margin-bottom: 20px;
         }
 
         h1 {
@@ -126,16 +119,6 @@
     </div>
 
     <div id="results-container">
-        <div class="intro">
-            <p><strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
-            <p>Inspired by the strategic finality of the term, <strong>Check-Mate</strong> enables you to instantly search, filter, and interrogate huge volumes of training, policy, guidance, and operational documents using natural language, intuitive keywords, and intelligent filters.</p>
-            <p>Instead of navigating hundreds of pages manually, users pose a question – and <strong>Check-Mate</strong> responds with precise, context-grounded answers drawn directly from structured, authoritative sources, including (but not limited to) procedures; policy; frameworks; national and international standards; guidance, and validated best practice.</p>
-            <p>Typically, manual searches through complex documents can take anything between 10 to 30 minutes per query. <strong>Check-Mate</strong> delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.</p>
-            <p>Engineered to align with the core logic and governance principles of SAT and DSAT, <strong>Check-Mate</strong> supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.</p>
-            <p>In high-stakes systems <strong>Check-Mate</strong> delivers efficiency, speed, accuracy, effectiveness and assurance when it matters most.</p>
-            <p><strong>Check-Mate isn’t just a support tool – it’s the final winning move.</strong></p>
-        </div>
-
         {% if keyword %}
             <div class="search-meta">
                 Number of search results: {{ results|length }}
