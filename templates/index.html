@@ -7,156 +7,115 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        .container {
             display: flex;
-            flex-direction: row;
-            padding: 20px;
+            background-color: #f9f9f9;
         }
-
         .sidebar {
-            width: 300px;
+            width: 320px;
             padding: 20px;
             background-color: #ffffff;
             border-right: 1px solid #ddd;
         }
-
-        .main-content {
+        .content {
             flex-grow: 1;
             padding: 20px;
         }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-top: 15px;
-        }
-
-        input[type="text"],
-        select {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-        }
-
-        input[type="submit"] {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            width: 100%;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .result-block {
-            margin-bottom: 25px;
-            padding: 15px;
+        .result {
             background-color: #ffffff;
             border-left: 4px solid #007bff;
-        }
-
-        .result-block h3 {
-            margin-top: 0;
-            font-size: 16px;
-        }
-
-        .result-meta {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .checkbox-group {
-            margin-top: 10px;
-        }
-
-        .summary-bar {
+            padding: 10px 15px;
             margin-bottom: 15px;
+        }
+        .results-container {
+            margin-top: 20px;
+        }
+        label {
             font-weight: bold;
         }
-
-        .intro {
+        select, input[type="text"], button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 8px;
             font-size: 14px;
-            background: #fff7e6;
-            border-left: 5px solid #ffc107;
-            padding: 15px;
+        }
+        button {
+            background-color: #2e5cff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .intro-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #f0ad4e;
+            padding: 20px;
             margin-bottom: 20px;
         }
-
+        .intro-box p {
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <h1>Checkmate</h1>
-            <form method="POST">
-                <label for="query">Enter your question or keyword:</label>
-                <input type="text" name="query" id="query" value="{{ query }}">
+    <div class="sidebar">
+        <h2><strong>Check-Mate</strong></h2>
+        <form method="POST">
+            <label for="query">Enter your question or keyword:</label>
+            <input type="text" id="query" name="query" value="{{ request.form.get('query', '') }}">
 
-                <label for="document_filter">Filter by document (optional):</label>
-                <select name="document_filter" id="document_filter" onchange="this.form.submit()">
-                    <option value="All" {% if document_filter == 'All' %}selected{% endif %}>All documents</option>
-                    {% for doc in available_documents %}
-                        <option value="{{ doc }}" {% if document_filter == doc %}selected{% endif %}>{{ doc }}</option>
-                    {% endfor %}
-                </select>
+            <label for="filter_document">Filter by document (optional):</label>
+            <select id="filter_document" name="filter_document">
+                <option value="">All documents</option>
+                {% for doc in documents %}
+                    <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
+                {% endfor %}
+            </select>
 
-                <label for="section_filter">Filter by contents (optional):</label>
-                <select name="section_filter" id="section_filter">
-                    <option value="All" {% if section_filter == 'All' %}selected{% endif %}>All sections</option>
-                    {% for section in available_sections %}
-                        <option value="{{ section }}" {% if section_filter == section %}selected{% endif %}>{{ section }}</option>
-                    {% endfor %}
-                </select>
+            <label for="filter_heading">Filter by contents (optional):</label>
+            <select id="filter_heading" name="filter_heading">
+                <option value="">All sections</option>
+                {% for head in headings %}
+                    <option value="{{ head }}" {% if head == selected_heading %}selected{% endif %}>{{ head }}</option>
+                {% endfor %}
+            </select>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" name="show_detailed" id="show_detailed" {% if show_detailed %}checked{% endif %}>
-                    <label for="show_detailed">Show detailed results only</label>
-                </div>
+            <label>
+                <input type="checkbox" name="show_detailed" {% if show_detailed %}checked{% endif %}>
+                Show detailed results only
+            </label>
 
-                <input type="submit" value="Search">
-            </form>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+    <div class="content">
+        <div class="intro-box">
+            <p><strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+
+            <p>Inspired by the strategic finality of the term, <strong>Check-Mate</strong> enables you to instantly search, filter, and interrogate huge volumes of training, policy, guidance, and operational documents using natural language, intuitive keywords, and intelligent filters.</p>
+
+            <p>Instead of navigating hundreds of pages manually, users pose a question – and <strong>Check-Mate</strong> responds with precise, context-grounded answers drawn directly from structured, authoritative sources, including (but not limited to) procedures; policy; frameworks; national and international standards; guidance, and validated best practice.</p>
+
+            <p>Typically, manual searches through complex documents can take anything between 10 to 30 minutes per query. <strong>Check-Mate</strong> delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.</p>
+
+            <p>Engineered to align with the core logic and governance principles of SAT and DSAT, <strong>Check-Mate</strong> supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.</p>
+
+            <p>In high-stakes systems <strong>Check-Mate</strong> delivers efficiency, speed, accuracy, effectiveness and assurance when it matters most.</p>
+
+            <p><strong>Check-Mate isn’t just a support tool – it’s the final winning move.</strong></p>
         </div>
 
-        <div class="main-content">
-            <div class="intro">
-                <strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).<br><br>
-                Instead of navigating hundreds of pages manually, users pose a question – and Check-Mate responds with precise, context-grounded answers drawn directly from structured, authoritative sources.<br><br>
-                Typically, manual searches through complex documents can take between 10 to 30 minutes. Check-Mate delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.<br><br>
-                Engineered to align with the core logic and governance principles of SAT and DSAT, Check-Mate supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.
-            </div>
-
-            {% if results %}
-                <div class="summary-bar">
-                    Number of search results: {{ result_count }}
-                </div>
+        {% if results %}
+            <h2>Number of search results: {{ results|length }}</h2>
+            <div class="results-container">
                 {% for result in results %}
-                    <div class="result-block">
-                        <div class="result-meta">
-                            <strong>Document:</strong> {{ result.document }}<br>
-                            <strong>Section:</strong> {{ result.section }}
-                        </div>
-                        {% if show_detailed %}
-                            <div>{{ result.content }}</div>
-                        {% endif %}
+                    <div class="result">
+                        <p><strong>Document:</strong> {{ result.document }}</p>
+                        <p><strong>Section:</strong> {{ result.heading }}</p>
+                        <p><strong>Text:</strong> {{ result.text }}</p>
                     </div>
                 {% endfor %}
-            {% elif request.method == 'POST' %}
-                <p><em>No results found.</em></p>
-            {% endif %}
-        </div>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>

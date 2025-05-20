@@ -7,57 +7,35 @@ app = Flask(__name__)
 with open("chunks.json", "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
-def get_available_documents():
-    return sorted(set(chunk["document"] for chunk in chunks))
-
-def get_sections_for_document(document_name):
-    return sorted(set(
-        chunk["section"] for chunk in chunks
-        if chunk["document"] == document_name
-    ))
+documents = sorted(set(chunk["document"] for chunk in chunks))
+headings = sorted(set(chunk["heading"] for chunk in chunks if "Glossary" not in chunk["heading"]))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = []
     query = ""
-    keyword = ""
-    document_filter = "All"
-    section_filter = "All"
+    selected_document = ""
+    selected_heading = ""
     show_detailed = False
-
-    available_documents = get_available_documents()
-    available_sections = []
 
     if request.method == "POST":
         query = request.form.get("query", "").strip()
-        keyword = request.form.get("keyword", "").strip()
-        document_filter = request.form.get("document_filter", "All")
-        section_filter = request.form.get("section_filter", "All")
-        show_detailed = request.form.get("show_detailed") == "on"
+        selected_document = request.form.get("filter_document", "")
+        selected_heading = request.form.get("filter_heading", "")
+        show_detailed = bool(request.form.get("show_detailed"))
 
-        results = answer_question(
-            chunks,
-            query=query,
-            keyword=keyword,
-            document_filter=document_filter,
-            section_filter=section_filter,
-            detailed=show_detailed,
-        )
-
-    if document_filter != "All":
-        available_sections = get_sections_for_document(document_filter)
+        if query:
+            results = answer_question(query, selected_document, selected_heading, show_detailed)
 
     return render_template(
         "index.html",
         results=results,
-        query=query,
-        keyword=keyword,
-        document_filter=document_filter,
-        section_filter=section_filter,
-        show_detailed=show_detailed,
-        available_documents=available_documents,
-        available_sections=available_sections,
-        result_count=len(results)
+        request=request,
+        documents=documents,
+        headings=headings,
+        selected_document=selected_document,
+        selected_heading=selected_heading,
+        show_detailed=show_detailed
     )
 
 if __name__ == "__main__":

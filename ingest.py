@@ -1,60 +1,40 @@
 import os
-import json
 import docx
+import json
 
-SOURCE_DIR = "docs"
-OUTPUT_FILE = "chunks.json"
-MAX_CHUNK_SIZE = 1000
+def extract_text_with_headings(doc_path):
+    doc = docx.Document(doc_path)
+    content = []
+    current_heading = "No Heading"
 
-def extract_text_from_docx(path):
-    doc = docx.Document(path)
-    full_text = []
     for para in doc.paragraphs:
-        if para.text.strip():
-            full_text.append(para.text.strip())
-    return full_text
+        if para.style.name.startswith("Heading"):
+            current_heading = para.text.strip()
+        elif para.text.strip():
+            content.append({
+                "document": os.path.basename(doc_path),
+                "heading": current_heading,
+                "text": para.text.strip()
+            })
 
-def chunk_text_by_paragraph(text_blocks, max_chunk_size=MAX_CHUNK_SIZE):
-    chunks = []
-    current_chunk = []
-    current_length = 0
-    for paragraph in text_blocks:
-        if current_length + len(paragraph) > max_chunk_size and current_chunk:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = []
-            current_length = 0
-        current_chunk.append(paragraph)
-        current_length += len(paragraph)
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
-    return chunks
+    return content
 
-def get_section_from_text(text):
-    import re
-    match = re.search(r'\b\d+(\.\d+)*\b', text)
-    return match.group(0) if match else "Uncategorised"
-
-def ingest_docs():
+def ingest_documents(directory):
     all_chunks = []
-    for filename in os.listdir(SOURCE_DIR):
-        if not filename.endswith(".docx") or filename.startswith("~$"):
-            continue
-        filepath = os.path.join(SOURCE_DIR, filename)
-        try:
-            text_blocks = extract_text_from_docx(filepath)
-            paragraph_chunks = chunk_text_by_paragraph(text_blocks)
-            for chunk in paragraph_chunks:
-                section = get_section_from_text(chunk)
-                all_chunks.append({
-                    "document": filename,
-                    "section": section,
-                    "content": chunk
-                })
-        except Exception as e:
-            print(f"Error processing {filename}: {e}")
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
-    print(f"✅ Ingested {len(all_chunks)} chunks into {OUTPUT_FILE}")
+
+    for filename in os.listdir(directory):
+        if filename.endswith(".docx") and not filename.startswith("~$"):
+            path = os.path.join(directory, filename)
+            chunks = extract_text_with_headings(path)
+            all_chunks.extend(chunks)
+
+    return all_chunks
 
 if __name__ == "__main__":
-    ingest_docs()
+    docs_path = "docs"
+    data = ingest_documents(docs_path)
+
+    with open("chunks.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+    print(f"Ingested {len(data)} content chunks.")

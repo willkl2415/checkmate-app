@@ -1,27 +1,32 @@
-from difflib import SequenceMatcher
+import json
 
-def similar(a, b):
-    return SequenceMatcher(None, a, b).ratio()
+with open("chunks.json", "r", encoding="utf-8") as f:
+    chunks = json.load(f)
 
-def answer_question(chunks, query="", keyword="", document_filter="All", section_filter="All", detailed=False):
+def answer_question(query, selected_document, selected_heading, show_detailed):
+    query_lower = query.lower()
     results = []
-    seen = set()
 
     for chunk in chunks:
-        if document_filter != "All" and chunk["document"] != document_filter:
-            continue
-        if section_filter != "All" and chunk["section"] != section_filter:
+        if "Glossary" in chunk["heading"]:
             continue
 
-        if query and (query.lower() in chunk["content"].lower() or similar(query.lower(), chunk["content"].lower()) > 0.6):
-            match_key = (chunk["document"], chunk["section"], chunk["content"][:60])
-            if match_key not in seen:
+        if selected_document and chunk["document"] != selected_document:
+            continue
+        if selected_heading and chunk["heading"] != selected_heading:
+            continue
+
+        text_lower = chunk["text"].lower()
+
+        if query_lower in text_lower:
+            if show_detailed:
                 results.append(chunk)
-                seen.add(match_key)
-        elif keyword and keyword.lower() in chunk["content"].lower():
-            match_key = (chunk["document"], chunk["section"], chunk["content"][:60])
-            if match_key not in seen:
-                results.append(chunk)
-                seen.add(match_key)
+            else:
+                if all(k in chunk for k in ("document", "heading", "text")):
+                    results.append({
+                        "document": chunk["document"],
+                        "heading": chunk["heading"],
+                        "text": chunk["text"]
+                    })
 
     return results
