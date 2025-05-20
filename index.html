@@ -1,166 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Check-Mate</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <title>Check-Mate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
-    }
+        #question-form {
+            width: 320px;
+            min-width: 320px;
+            max-width: 320px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-right: 1px solid #ccc;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
 
-    #question-form {
-      flex-shrink: 0;
-      width: 320px;
-      min-width: 320px;
-      padding: 20px;
-      background-color: #f9f9f9;
-      border-right: 1px solid #ccc;
-    }
+        #results-container {
+            flex-grow: 1;
+            max-width: calc(100% - 320px);
+            padding: 30px 40px;
+            background-color: #fffde7;
+            box-sizing: border-box;
+        }
 
-    #results-container {
-      flex-grow: 1;
-      padding: 30px 40px;
-      background-color: #fffde7;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        textarea, select, input[type="text"] {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
 
-    #intro {
-      background-color: #fff3cd;
-      padding: 25px;
-      margin-bottom: 30px;
-      border-left: 5px solid #ffcc00;
-      width: 100%;
-      max-width: 960px;
-    }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
-    #intro p {
-      margin: 0 0 12px 0;
-      line-height: 1.6;
-    }
+        button:hover {
+            background-color: #0d75d8;
+        }
 
-    .result-container {
-      width: 100%;
-      max-width: 960px;
-    }
+        .result {
+            border-left: 5px solid #1e90ff;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #ffffff;
+        }
 
-    .result {
-      background-color: #ffffff;
-      border-left: 5px solid #007acc;
-      margin-bottom: 20px;
-      padding: 15px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      overflow-wrap: break-word;
-    }
+        .result strong {
+            display: block;
+            margin-bottom: 5px;
+        }
 
-    h1 {
-      margin-top: 0;
-    }
+        .intro {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
 
-    h2 {
-      text-align: left;
-      max-width: 960px;
-      width: 100%;
-    }
+        h1 {
+            margin-top: 0;
+        }
 
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 10px;
-    }
+        label {
+            font-weight: bold;
+        }
 
-    input[type="text"], select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 4px;
-      margin-bottom: 12px;
-    }
+        .filters {
+            margin-bottom: 10px;
+        }
 
-    input[type="checkbox"] {
-      margin-right: 5px;
-    }
+        .filters label {
+            font-weight: normal;
+        }
 
-    button {
-      padding: 10px 20px;
-      background-color: #3366cc;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background-color: #254d99;
-    }
-  </style>
+        .search-meta {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
-  <div id="question-form">
-    <h1>Check-Mate</h1>
-    <form method="POST">
-      <label for="keyword">Enter your question or keyword:</label>
-      <input type="text" id="keyword" name="keyword" value="{{ keyword or '' }}" required />
+    <div id="question-form">
+        <h1>Check-Mate</h1>
+        <form method="post">
+            <label for="keyword">Enter your question or keyword:</label>
+            <input type="text" name="keyword" id="keyword" value="{{ keyword or '' }}">
 
-      <label for="document">Filter by document (optional):</label>
-      <select id="document" name="document">
-        <option value="">All documents</option>
-        {% for doc in documents %}
-        <option value="{{ doc }}" {% if selected_document == doc %}selected{% endif %}>{{ doc }}</option>
-        {% endfor %}
-      </select>
+            <div class="filters">
+                <label for="document">Filter by document (optional):</label>
+                <select name="document" id="document">
+                    <option value="">All documents</option>
+                    {% for doc in available_documents %}
+                        <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <label for="section">Filter by contents (optional):</label>
-      <select id="section" name="section">
-        <option value="">All sections</option>
-        {% for sec in sections %}
-        <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>{{ sec }}</option>
-        {% endfor %}
-      </select>
+            <div class="filters">
+                <label for="section">Filter by contents (optional):</label>
+                <select name="section" id="section">
+                    <option value="">All sections</option>
+                    {% for sec in available_sections %}
+                        <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-      <label>
-        <input type="checkbox" name="show_detailed" {% if show_detailed %}checked{% endif %} />
-        Show detailed results only
-      </label>
-
-      <button type="submit">Search</button>
-    </form>
-  </div>
-
-  <div id="results-container">
-    <div id="intro">
-      <p><strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
-      <p>Inspired by the strategic finality of the term, <strong>Check-Mate</strong> enables you to instantly search, filter, and interrogate huge volumes of training, policy, guidance, and operational documents using natural language, intuitive keywords, and intelligent filters.</p>
-      <p>Instead of navigating hundreds of pages manually, users pose a question – and <strong>Check-Mate</strong> responds with precise, context-grounded answers drawn directly from structured, authoritative sources, including (but not limited to) procedures; policy; frameworks; national and international standards; guidance, and validated best practice.</p>
-      <p>Typically, manual searches through complex documents can take anything between 10 to 30 minutes per query. <strong>Check-Mate</strong> delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.</p>
-      <p>Engineered to align with the core logic and governance principles of SAT and DSAT, <strong>Check-Mate</strong> supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.</p>
-      <p>In high-stakes systems <strong>Check-Mate</strong> delivers efficiency, speed, accuracy, effectiveness and assurance when it matters most.</p>
-      <p><strong>Check-Mate isn’t just a support tool – it’s the final winning move.</strong></p>
+            <button type="submit">Search</button>
+        </form>
     </div>
 
-    {% if results %}
-    <h2>Number of search results: {{ results|length }}</h2>
-    <div class="result-container">
-      {% for r in results %}
-      <div class="result">
-        <strong>Document:</strong> {{ r['document'] }}<br />
-        <strong>Section:</strong> {{ r['section'] }}<br />
-        <strong>Text:</strong> {{ r['text'] }}
-      </div>
-      {% endfor %}
+    <div id="results-container">
+        <div class="intro">
+            <p><strong>Check-Mate</strong> is a very smart AI-enabled application designed to deliver absolute clarity in moments of complexity – especially within the structured environments shaped by the Systems Approach to Training (SAT) and Defence Systems Approach to Training (DSAT).</p>
+            <p>Inspired by the strategic finality of the term, <strong>Check-Mate</strong> enables you to instantly search, filter, and interrogate huge volumes of training, policy, guidance, and operational documents using natural language, intuitive keywords, and intelligent filters.</p>
+            <p>Instead of navigating hundreds of pages manually, users pose a question – and <strong>Check-Mate</strong> responds with precise, context-grounded answers drawn directly from structured, authoritative sources, including (but not limited to) procedures; policy; frameworks; national and international standards; guidance, and validated best practice.</p>
+            <p>Typically, manual searches through complex documents can take anything between 10 to 30 minutes per query. <strong>Check-Mate</strong> delivers the same outcome in as little as 5 to 10 seconds – a time saving of up to 99.7%.</p>
+            <p>Engineered to align with the core logic and governance principles of SAT and DSAT, <strong>Check-Mate</strong> supports Training Analysts, Consultants, Designers, and Managers in making evidence-based decisions with speed, accuracy, and certainty.</p>
+            <p>In high-stakes systems <strong>Check-Mate</strong> delivers efficiency, speed, accuracy, effectiveness and assurance when it matters most.</p>
+            <p><strong>Check-Mate isn’t just a support tool – it’s the final winning move.</strong></p>
+        </div>
+
+        {% if keyword %}
+            <div class="search-meta">
+                Number of search results: {{ results|length }}
+            </div>
+
+            {% for result in results %}
+                <div class="result">
+                    <strong>Document:</strong> {{ result.document }}<br>
+                    <strong>Section:</strong> {{ result.section }}<br>
+                    <strong>Text:</strong> {{ result.text }}
+                </div>
+            {% endfor %}
+        {% endif %}
     </div>
-    {% elif keyword %}
-    <p>No results found.</p>
-    {% endif %}
-  </div>
 </body>
 </html>
