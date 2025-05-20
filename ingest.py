@@ -1,40 +1,44 @@
 import os
-import docx
 import json
+import docx
 
-def extract_text_with_headings(doc_path):
+def extract_text_and_headings(doc_path):
     doc = docx.Document(doc_path)
-    content = []
-    current_heading = "No Heading"
+    sections = []
+    current_section = {"section": "Uncategorised", "text": ""}
 
     for para in doc.paragraphs:
+        text = para.text.strip()
+        if not text:
+            continue
         if para.style.name.startswith("Heading"):
-            current_heading = para.text.strip()
-        elif para.text.strip():
-            content.append({
-                "document": os.path.basename(doc_path),
-                "heading": current_heading,
-                "text": para.text.strip()
+            if current_section["text"]:
+                sections.append(current_section)
+            current_section = {"section": text, "text": ""}
+        else:
+            current_section["text"] += " " + text
+
+    if current_section["text"]:
+        sections.append(current_section)
+
+    return sections
+
+def ingest_docs(folder_path="docs"):
+    chunks = []
+    for filename in os.listdir(folder_path):
+        if filename.startswith("~$") or not filename.endswith(".docx"):
+            continue
+        full_path = os.path.join(folder_path, filename)
+        sections = extract_text_and_headings(full_path)
+        for sec in sections:
+            chunks.append({
+                "document": filename,
+                "section": sec["section"],
+                "content": sec["text"].strip()
             })
-
-    return content
-
-def ingest_documents(directory):
-    all_chunks = []
-
-    for filename in os.listdir(directory):
-        if filename.endswith(".docx") and not filename.startswith("~$"):
-            path = os.path.join(directory, filename)
-            chunks = extract_text_with_headings(path)
-            all_chunks.extend(chunks)
-
-    return all_chunks
+    return chunks
 
 if __name__ == "__main__":
-    docs_path = "docs"
-    data = ingest_documents(docs_path)
-
+    all_chunks = ingest_docs()
     with open("chunks.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    print(f"Ingested {len(data)} content chunks.")
+        json.dump(all_chunks, f, ensure_ascii=False, indent=2)

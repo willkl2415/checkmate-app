@@ -1,32 +1,25 @@
-import json
-
-with open("chunks.json", "r", encoding="utf-8") as f:
-    chunks = json.load(f)
-
-def answer_question(query, selected_document, selected_heading, show_detailed):
-    query_lower = query.lower()
+def answer_question(chunks, query="", keyword="", source_filter="All", section_filter="All", detailed=True):
     results = []
+    query = query.lower()
+    keyword = keyword.lower()
 
     for chunk in chunks:
-        if "Glossary" in chunk["heading"]:
+        if source_filter != "All" and chunk["document"] != source_filter:
+            continue
+        if section_filter != "All" and chunk["section"] != section_filter:
             continue
 
-        if selected_document and chunk["document"] != selected_document:
-            continue
-        if selected_heading and chunk["heading"] != selected_heading:
-            continue
+        match = False
+        if query and query in chunk["content"].lower():
+            match = True
+        elif keyword and keyword in chunk["content"].lower():
+            match = True
 
-        text_lower = chunk["text"].lower()
-
-        if query_lower in text_lower:
-            if show_detailed:
-                results.append(chunk)
-            else:
-                if all(k in chunk for k in ("document", "heading", "text")):
-                    results.append({
-                        "document": chunk["document"],
-                        "heading": chunk["heading"],
-                        "text": chunk["text"]
-                    })
+        if match:
+            results.append({
+                "document": chunk["document"],
+                "section": chunk["section"],
+                "content": chunk["content"]
+            })
 
     return results
