@@ -3,17 +3,17 @@ import json
 
 app = Flask(__name__)
 
-# Load chunks from the JSON file
+# Load the structured chunks.json file
 with open("chunks.json", "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
-# Extract all available documents and sections (renamed headings)
-available_documents = sorted(set(chunk.get("document", "Unknown Document") for chunk in chunks))
-available_sections = sorted(set(chunk.get("heading", "No Heading") for chunk in chunks))
+# Build document and section dropdown options
+available_documents = sorted(set(chunk.get("document", "") for chunk in chunks))
+available_sections = sorted(set(chunk.get("heading", "") for chunk in chunks))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    keyword = request.form.get("keyword", "").lower()
+    keyword = request.form.get("keyword", "").strip().lower()
     selected_document = request.form.get("document", "")
     selected_section = request.form.get("section", "")
 
@@ -21,14 +21,18 @@ def index():
     if keyword:
         for chunk in chunks:
             content = chunk.get("content", "").lower()
-            doc_match = (not selected_document or chunk.get("document") == selected_document)
-            section_match = (not selected_section or chunk.get("heading") == selected_section)
-            if keyword in content and doc_match and section_match:
-                results.append({
-                    "document": chunk.get("document", ""),
-                    "section": chunk.get("heading", "No Heading"),
-                    "text": chunk.get("content", "")
-                })
+            document = chunk.get("document", "")
+            heading = chunk.get("heading", "")
+
+            # Match logic
+            if keyword in content:
+                if (not selected_document or selected_document == document) and \
+                   (not selected_section or selected_section == heading):
+                    results.append({
+                        "document": document,
+                        "section": heading,
+                        "text": chunk.get("content", "")
+                    })
 
     return render_template("index.html",
                            results=results,
