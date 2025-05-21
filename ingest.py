@@ -1,60 +1,44 @@
+import re
 import os
 import json
-import re
-from docx import Document
+import docx
 
-def extract_text_with_sections(doc_path):
-    document = Document(doc_path)
+def extract_paragraphs_by_heading(doc_path):
+    doc = docx.Document(doc_path)
     chunks = []
-
     current_heading = "No Heading"
-    filename = os.path.basename(doc_path)
+    heading_pattern = r"^\d+(\.\d+)*"
 
-    # Process all paragraphs and heading patterns
-    for para in document.paragraphs:
+    for para in doc.paragraphs:
         text = para.text.strip()
+
         if not text:
             continue
 
-        # Detect and assign heading
-        if re.match(r"^\d+(\.\d+)*\s", text):
+        if para.style.name.startswith("Heading") or re.match(heading_pattern, text):
             current_heading = text
 
         chunks.append({
-            "document": filename,
+            "document": os.path.basename(doc_path),
             "heading": current_heading,
             "content": text
         })
 
-    # Process all tables
-    for table in document.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for para in cell.paragraphs:
-                    text = para.text.strip()
-                    if text:
-                        chunks.append({
-                            "document": filename,
-                            "heading": current_heading,
-                            "content": text
-                        })
-
     return chunks
 
-def main():
-    docs_dir = "docs"
-    output_file = "chunks.json"
+def load_all_chunks_from_docs_folder():
     all_chunks = []
+    docs_folder = "docs"
 
-    for file in os.listdir(docs_dir):
-        if file.endswith(".docx") and not file.startswith("~$"):
-            full_path = os.path.join(docs_dir, file)
-            all_chunks.extend(extract_text_with_sections(full_path))
+    for filename in os.listdir(docs_folder):
+        if filename.endswith(".docx") and not filename.startswith("~$"):
+            file_path = os.path.join(docs_folder, filename)
+            all_chunks.extend(extract_paragraphs_by_heading(file_path))
 
-    with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, ensure_ascii=False, indent=2)
-
-    print(f"✅ chunks.json created with {len(all_chunks)} total entries")
+    return all_chunks
 
 if __name__ == "__main__":
-    main()
+    final_chunks = load_all_chunks_from_docs_folder()
+    with open("chunks.json", "w", encoding="utf-8") as f:
+        json.dump(final_chunks, f, indent=2, ensure_ascii=False)
+    print(f"Ingested {len(final_chunks)} chunks.")
