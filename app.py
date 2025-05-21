@@ -3,13 +3,34 @@ import json
 
 app = Flask(__name__)
 
-# Load the structured chunks.json file
+# Load chunks and exclude all Glossary results
 with open("chunks.json", "r", encoding="utf-8") as f:
-    chunks = json.load(f)
+    raw_chunks = json.load(f)
 
-# Build document and section dropdown options
+# Completely exclude glossary content from results and filters
+chunks = [
+    chunk for chunk in raw_chunks
+    if "glossary" not in chunk.get("heading", "").lower()
+       and "glossary" not in chunk.get("content", "").lower()
+]
+
+# Pre-calculate available documents
 available_documents = sorted(set(chunk.get("document", "") for chunk in chunks))
-available_sections = sorted(set(chunk.get("heading", "") for chunk in chunks))
+
+
+def get_valid_sections(document_name):
+    """Return only sections with at least one chunk for the selected document."""
+    section_counts = {}
+
+    for chunk in chunks:
+        if document_name and chunk.get("document", "") != document_name:
+            continue
+        heading = chunk.get("heading", "").strip()
+        if heading:
+            section_counts[heading] = section_counts.get(heading, 0) + 1
+
+    return sorted([section for section, count in section_counts.items() if count > 0])
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -17,22 +38,28 @@ def index():
     selected_document = request.form.get("document", "")
     selected_section = request.form.get("section", "")
 
-    results = []
-    if keyword:
-        for chunk in chunks:
-            content = chunk.get("content", "").lower()
-            document = chunk.get("document", "")
-            heading = chunk.get("heading", "")
+    # Dynamically determine dropdown for valid headings
+    available_sections = get_valid_sections(selected_document)
 
-            # Match logic
-            if keyword in content:
-                if (not selected_document or selected_document == document) and \
-                   (not selected_section or selected_section == heading):
-                    results.append({
-                        "document": document,
-                        "section": heading,
-                        "text": chunk.get("content", "")
-                    })
+    # Build filtered results
+    results = []
+    for chunk in chunks:
+        doc = chunk.get("document", "")
+        heading = chunk.get("heading", "")
+        content = chunk.get("content", "")
+
+        if selected_document and doc != selected_document:
+            continue
+        if selected_section and heading != selected_section:
+            continue
+        if keyword and keyword not in content.lower():
+            continue
+
+        results.append({
+            "document": doc,
+            "section": heading,
+            "text": content
+        })
 
     return render_template("index.html",
                            results=results,
