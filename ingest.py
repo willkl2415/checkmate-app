@@ -1,44 +1,46 @@
-import re
 import os
-import json
 import docx
+import json
+import re
+
+DOCS_FOLDER = "docs"
+OUTPUT_FILE = "chunks.json"
 
 def extract_paragraphs_by_heading(doc_path):
     doc = docx.Document(doc_path)
     chunks = []
-    current_heading = "No Heading"
-    heading_pattern = r"^\d+(\.\d+)*"
+    current_section = "Unknown Section"
 
     for para in doc.paragraphs:
         text = para.text.strip()
+        style = para.style.name if para.style else ""
 
-        if not text:
+        if not text or text.startswith("Figure") or text.startswith("Table"):
             continue
 
-        if para.style.name.startswith("Heading") or re.match(heading_pattern, text):
-            current_heading = text
+        # Detect and update heading-style sections
+        if "Heading" in style or re.match(r"^\d+(\.\d+)*\s+", text):
+            current_section = text
 
+        # Append the chunk with section and source
         chunks.append({
             "document": os.path.basename(doc_path),
-            "heading": current_heading,
-            "content": text
+            "section": current_section,
+            "text": text
         })
 
     return chunks
 
 def load_all_chunks_from_docs_folder():
     all_chunks = []
-    docs_folder = "docs"
-
-    for filename in os.listdir(docs_folder):
+    for filename in os.listdir(DOCS_FOLDER):
         if filename.endswith(".docx") and not filename.startswith("~$"):
-            file_path = os.path.join(docs_folder, filename)
+            file_path = os.path.join(DOCS_FOLDER, filename)
             all_chunks.extend(extract_paragraphs_by_heading(file_path))
-
     return all_chunks
 
 if __name__ == "__main__":
     final_chunks = load_all_chunks_from_docs_folder()
-    with open("chunks.json", "w", encoding="utf-8") as f:
-        json.dump(final_chunks, f, indent=2, ensure_ascii=False)
-    print(f"Ingested {len(final_chunks)} chunks.")
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(final_chunks, f, ensure_ascii=False, indent=2)
+    print(f"{len(final_chunks)} chunks written to {OUTPUT_FILE}")
