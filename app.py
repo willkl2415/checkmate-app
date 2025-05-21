@@ -7,9 +7,9 @@ app = Flask(__name__)
 with open("chunks.json", "r", encoding="utf-8") as f:
     chunks = json.load(f)
 
-# Extract unique documents and sections
-available_documents = sorted(set(chunk["document"] for chunk in chunks))
-available_sections = sorted(set(chunk["section"] for chunk in chunks if chunk["section"]))
+# Extract unique documents and sections (safely check for 'section')
+available_documents = sorted(set(chunk["document"] for chunk in chunks if "document" in chunk))
+available_sections = sorted(set(chunk["section"] for chunk in chunks if "section" in chunk and chunk["section"]))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -20,10 +20,12 @@ def index():
     results = []
     if keyword:
         for chunk in chunks:
-            if keyword.lower() in chunk["text"].lower():
-                if (not selected_document or chunk["document"] == selected_document) and \
-                   (not selected_section or chunk["section"] == selected_section):
-                    results.append(chunk)
+            text_match = keyword.lower() in chunk.get("text", "").lower()
+            document_match = (not selected_document or chunk.get("document") == selected_document)
+            section_match = (not selected_section or chunk.get("section") == selected_section)
+
+            if text_match and document_match and section_match:
+                results.append(chunk)
 
     return render_template("index.html", results=results, keyword=keyword,
                            available_documents=available_documents,
