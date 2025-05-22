@@ -101,54 +101,54 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <h1>Check-Mate</h1>
-            <form method="post">
-                <div>
-                    <label for="keyword">Enter your question or keyword:</label>
-                    <input type="text" name="keyword" id="keyword" value="{{ keyword or '' }}">
-                </div>
-                <div>
-                    <label for="document">Filter by document (optional):</label>
-                    <select name="document" id="document">
-                        <option value="">All documents</option>
-                        {% for doc in available_documents %}
-                            <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <label for="section">Filter by contents (optional):</label>
-                    <select name="section" id="section">
-                        <option value="">All sections</option>
-                        {% for sec in available_sections %}
-                            <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div>
-                    <button type="submit">Search</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="content">
-            <div class="scrollable">
-                {% if keyword %}
-                    <div class="results">
-                        <div class="search-meta">Number of search results: {{ results|length }}</div>
-                        {% for result in results %}
-                            <div class="result">
-                                <strong>Document:</strong> {{ result.document }}<br>
-                                <strong>Section:</strong> {{ result.section }}<br>
-                                <strong>Text:</strong> {{ result.text }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+<div class="container">
+    <div class="sidebar">
+        <h1>Check-Mate</h1>
+        <form method="post">
+            <div>
+                <label for="keyword">Enter your question or keyword:</label>
+                <input type="text" name="keyword" id="keyword" value="{{ keyword or '' }}">
             </div>
+            <div>
+                <label for="document">Filter by document (optional):</label>
+                <select name="document" id="document">
+                    <option value="">All documents</option>
+                    {% for doc in available_documents %}
+                        <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="section">Filter by contents (optional):</label>
+                <select name="section" id="section">
+                    <option value="">All sections</option>
+                    {% for sec in available_sections %}
+                        <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="content">
+        <div class="scrollable">
+            {% if keyword %}
+                <div class="results">
+                    <div class="search-meta">Number of search results: {{ results|length }}</div>
+                    {% for result in results %}
+                        <div class="result">
+                            <strong>Document:</strong> {{ result.document }}<br>
+                            <strong>Section:</strong> {{ result.section }}<br>
+                            <strong>Text:</strong> {{ result.text }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </div>
+</div>
 </body>
 </html>
