@@ -3,81 +3,96 @@ import json
 import docx
 import re
 
-# Define the headings map for each document
-JSP_822_HEADINGS = [
+# Full section list for JSP 822
+JSP_822_SECTIONS = [
     "1 Preface", "1.1 How to use this Volume", "1.2 Defence Training Support Manuals",
-    "2 Introduction to Individual Training", "2.1 Details",
-    "3 Management of Training System", "3.1 Introduction", "3.2 Roles / Stakeholders", "3.3 Training Governance Groups",
-    "3.4 MTS Activities and Outputs", "4 Analysis of Individual Training", "4.1 Introduction", "4.2 TNA Steering Group",
-    "4.3 Scoping Exercise", "4.4 Risk Register and Assumptions Register", "4.5 Scoping Exercise Report", "4.6 Role Analysis",
-    "4.7 Role Performance Statement and / or Framework(s)", "4.8 Training Gap Analysis", "4.9 Initial Training Objectives",
-    "4.10 Training Options Analysis", "4.11 Training Needs Report", "5 Designing Individual Training", "5.1 Introduction",
-    "5.2 Individual Training Objectives", "5.3 Formal Training Statement (FTS)", "5.4 Enabling Objectives / Key learning Points",
-    "5.5 Assessment Strategy", "5.6 Selection of Methods and Media", "5.7 Learning Scalar / Learning Specification",
-    "6 Delivery of Individual Training", "6.1 Introduction", "6.2 Preparing Training", "6.3 Remedial Training Strategy",
-    "6.4 Programming, Scheduling and Resourcing of Training", "6.5 Management of Training Deficiency (Inability to train / Failure of training)",
-    "7 Evaluation of Individual Training (Assurance)", "7.1 Introduction", "7.2 Training Needs Evaluation", "7.3 Evaluation Strategy",
-    "7.4 Internal Validation (InVal)", "7.5 External Validation (ExVal)", "8 Defence Trainer Capability", "8.1 Introduction",
-    "8.2 Defence Trainer", "8.3 Defence Trainer (Flying)", "8.4 Defence Trainer Supervisor (DTS)", "8.5 Defence Trainer Manager (DTM)",
+    "2 Introduction to Individual Training", "2.1 Details", "3 Management of Training System",
+    "3.1 Introduction", "3.2 Roles / Stakeholders", "3.3 Training Governance Groups",
+    "3.4 MTS Activities and Outputs", "4 Analysis of Individual Training", "4.1 Introduction",
+    "4.2 TNA Steering Group", "4.3 Scoping Exercise", "4.4 Risk Register and Assumptions Register",
+    "4.5 Scoping Exercise Report", "4.6 Role Analysis", "4.7 Role Performance Statement and / or Framework(s)",
+    "4.8 Training Gap Analysis", "4.9 Initial Training Objectives", "4.10 Training Options Analysis",
+    "4.11 Training Needs Report", "5 Designing Individual Training", "5.1 Introduction",
+    "5.2 Individual Training Objectives", "5.3 Formal Training Statement (FTS)",
+    "5.4 Enabling Objectives / Key learning Points", "5.5 Assessment Strategy",
+    "5.6 Selection of Methods and Media", "5.7 Learning Scalar / Learning Specification",
+    "6 Delivery of Individual Training", "6.1 Introduction", "6.2 Preparing Training",
+    "6.3 Remedial Training Strategy", "6.4 Programming, Scheduling and Resourcing of Training",
+    "6.5 Management of Training Deficiency (Inability to train / Failure of training)",
+    "7 Evaluation of Individual Training (Assurance)", "7.1 Introduction", "7.2 Training Needs Evaluation",
+    "7.3 Evaluation Strategy", "7.4 Internal Validation (InVal)", "7.5 External Validation (ExVal)",
+    "8 Defence Trainer Capability", "8.1 Introduction", "8.2 Defence Trainer", "8.3 Defence Trainer (Flying)",
+    "8.4 Defence Trainer Supervisor (DTS)", "8.5 Defence Trainer Manager (DTM)",
     "8.6 Commanding Officer of Training Establishment (COTE)", "8.7 Higher Education (HE) Lecturer",
-    "8.8 Personnel Delivering and Assessing Defence Trainer Capability Training Interventions", "8.9 Adventurous Training Trainer",
-    "8.10 Contractor", "9 Defence Direction on Remedial Training in Initial Training", "9.1 Introduction",
-    "9.2 The Vital Role of the Trainer", "10 Defence Direction on Robust Training", "10.1 Introduction", "10.2 Good Practice",
-    "10.3 Examples of Robust Training Factors", "10.4 Risks with Robust Training", "10.5 Governance", "10.6 Training",
+    "8.8 Personnel Delivering and Assessing Defence Trainer Capability Training Interventions",
+    "8.9 Adventurous Training Trainer", "8.10 Contractor",
+    "9 Defence Direction on Remedial Training in Initial Training", "9.1 Introduction",
+    "9.2 The Vital Role of the Trainer", "10 Defence Direction on Robust Training", "10.1 Introduction",
+    "10.2 Good Practice", "10.3 Examples of Robust Training Factors", "10.4 Risks with Robust Training",
+    "10.5 Governance", "10.6 Training",
     "10.7 Exertional Collapse, Universal Training Precautions (UTP) and Physical Activity Opt- Out Policy",
     "11 Document Information", "11.1 Document Coverage", "11.2 Document Information", "11.3 Document Versions",
     "12 Applicability", "13 Diversity and Inclusion"
 ]
 
-DTSM_2_HEADINGS = [
-    "1 How to use this Manual", "2 Introduction to Analysis of Training", "2.1 Training Needs Analysis", "2.1.1 Overview of the TNA",
-    "2.1.2 Considerations with a TNA", "3 TNA Governance", "3.1 Introduction", "3.2 Training Support Plan", "4 Scoping Exercise",
-    "4.1 Introduction", "4.3 TNA Terms of References", "4.3 TNA Plan", "4.4 Training Audience (and Throughput) Description",
-    "4.5 Constraints Analysis", "4.6 The Scoping Exercise Report", "5 Role Analysis", "5.1 Introduction", "5.2 Identification of Role",
-    "5.7 Production of Role Scalar", "5.4 DIF Analysis", "5.5 Knowledge, Skills and Attitude Analysis", "5.6 Initial Training Categorisation",
-    "5.7 Role Performance Statement", "8.7 Frameworks", "5.8.1 Competence Frameworks", "5.8.2 Competency Frameworks",
-    "8.7 Recommended Further Reading", "5.8.3 Competence Retention Analysis Handbook", "6 Training Gap Analysis", "6.1 Introduction",
-    "6.2 Statement of Training Gaps", "7 Training Objectives", "8 Training Options Analysis", "8.1 Introduction",
-    "8.2 Fidelity Analysis", "8.3 Location / Environment Implications", "8.4 Methods and Media Options", "8.5 Cost Benefit Analysis",
-    "8.6 Options Evaluation", "8.7 Recommended Further Reading", "8.7.1 Guidebook of Decision Support Tools for Training Design and Delivery: Part 7 - Fidelity Analysis",
-    "9 Training Needs Report", "10 Annexes", "A - Initial KSA Analysis (KSA) Example", "B - Role Performance Statement (Role PS) Example",
-    "C – Fidelity Analysis Example"
+# Full section list for DTSM 2
+DTSM_2_SECTIONS = [
+    "1 How to use this Manual", "2 Introduction to Analysis of Training", "2.1 Training Needs Analysis",
+    "2.1.1 Overview of the TNA", "2.1.2 Considerations with a TNA", "3 TNA Governance", "3.1 Introduction",
+    "3.2 Training Support Plan", "4 Scoping Exercise", "4.1 Introduction", "4.3 TNA Terms of References",
+    "4.3 TNA Plan", "4.4 Training Audience (and Throughput) Description", "4.5 Constraints Analysis",
+    "4.6 The Scoping Exercise Report", "5 Role Analysis", "5.1 Introduction", "5.2 Identification of Role",
+    "5.7 Production of Role Scalar", "5.4 DIF Analysis", "5.5 Knowledge, Skills and Attitude Analysis",
+    "5.6 Initial Training Categorisation", "5.7 Role Performance Statement", "8.7 Frameworks",
+    "5.8.1 Competence Frameworks", "5.8.2 Competency Frameworks", "8.7 Recommended Further Reading",
+    "5.8.3 Competence Retention Analysis Handbook", "6 Training Gap Analysis", "6.1 Introduction",
+    "6.2 Statement of Training Gaps", "7 Training Objectives", "8 Training Options Analysis",
+    "8.1 Introduction", "8.2 Fidelity Analysis", "8.3 Location / Environment Implications",
+    "8.4 Methods and Media Options", "8.5 Cost Benefit Analysis", "8.6 Options Evaluation",
+    "8.7 Recommended Further Reading", "8.7.1 Guidebook of Decision Support Tools for Training Design and Delivery: Part 7 - Fidelity Analysis",
+    "9 Training Needs Report", "10 Annexes", "A - Initial KSA Analysis (KSA) Example",
+    "B - Role Performance Statement (Role PS) Example", "C – Fidelity Analysis Example"
 ]
 
-def extract_paragraphs_by_heading(doc_path):
+def extract_chunks(doc_path):
     doc = docx.Document(doc_path)
-    text_chunks = []
+    chunks = []
     current_heading = "Unknown Section"
-
     filename = os.path.basename(doc_path)
-    headings = JSP_822_HEADINGS if "JSP 822" in filename else DTSM_2_HEADINGS
+
+    headings = JSP_822_SECTIONS if "JSP 822" in filename else DTSM_2_SECTIONS
 
     for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
-        matched = next((h for h in headings if text.startswith(h)), None)
-        if matched:
-            current_heading = matched
-        else:
-            text_chunks.append({
-                "document": filename,
-                "section": current_heading,
-                "text": text
-            })
 
-    return text_chunks
+        matched_heading = next((h for h in headings if text.startswith(h)), None)
+        if matched_heading:
+            current_heading = matched_heading
+            continue
 
-def load_all_chunks_from_docs_folder():
-    folder_path = "docs"
+        chunks.append({
+            "document": filename,
+            "section": current_heading,
+            "text": text
+        })
+
+    return chunks
+
+def main():
+    docs_folder = "docs"
     all_chunks = []
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".docx") and not filename.startswith("~$"):
-            file_path = os.path.join(folder_path, filename)
-            all_chunks.extend(extract_paragraphs_by_heading(file_path))
-    return all_chunks
 
-# Final assembly and save
-final_chunks = load_all_chunks_from_docs_folder()
-with open("chunks.json", "w", encoding="utf-8") as f:
-    json.dump(final_chunks, f, indent=2, ensure_ascii=False)
+    for file in os.listdir(docs_folder):
+        if file.endswith(".docx") and not file.startswith("~$"):
+            full_path = os.path.join(docs_folder, file)
+            all_chunks.extend(extract_chunks(full_path))
+
+    with open("chunks.json", "w", encoding="utf-8") as f:
+        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ chunks.json created with {len(all_chunks)} entries.")
+
+if __name__ == "__main__":
+    main()
