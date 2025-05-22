@@ -1,41 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Check-Mate</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: row;
             margin: 0;
             padding: 0;
+            background-color: #fdfbe7;
         }
 
         #sidebar {
-            width: 300px;
-            background-color: #f4f4f4;
+            width: 320px;
+            min-width: 320px;
+            max-width: 320px;
             padding: 20px;
+            background-color: #f6f6f6;
             border-right: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
-        #main {
+        #content {
             flex-grow: 1;
             padding: 20px;
-            background-color: #fffbe7;
+            overflow-y: auto;
         }
 
         h1 {
             font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        select, input[type="text"], button {
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
             width: 100%;
             padding: 8px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
+            margin-top: 5px;
+            box-sizing: border-box;
         }
 
-        button {
+        button, input[type="submit"] {
+            margin-top: 20px;
+            padding: 10px 15px;
+            font-size: 14px;
             background-color: #3366ff;
             color: white;
             border: none;
@@ -43,14 +58,20 @@
         }
 
         .result {
-            border-left: 5px solid #3399ff;
-            padding-left: 10px;
-            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3498db;
         }
 
         .result strong {
             display: block;
-            margin-bottom: 4px;
+            margin-top: 5px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
@@ -58,37 +79,42 @@
     <div id="sidebar">
         <h1>Check-Mate</h1>
         <form method="POST">
-            <label>Enter your question or keyword:</label>
-            <input type="text" name="query" value="{{ query }}">
+            <label for="query">Enter your question or keyword:</label>
+            <input type="text" id="query" name="query" value="{{ query|default('') }}">
 
-            <label>Filter by document (optional):</label>
-            <select name="document">
+            <label for="document">Filter by document (optional):</label>
+            <select id="document" name="document">
+                <option {% if selected_doc == "All documents" %}selected{% endif %}>All documents</option>
                 {% for doc in documents %}
-                <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
+                    <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
                 {% endfor %}
             </select>
 
-            <label>Filter by contents (optional):</label>
-            <select name="section">
+            <label for="section">Filter by contents (optional):</label>
+            <select id="section" name="section">
+                <option {% if selected_section == "All sections" %}selected{% endif %}>All sections</option>
                 {% for sec in sections %}
-                <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+                    <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>{{ sec }}</option>
                 {% endfor %}
             </select>
 
-            <button type="submit">Search</button>
+            <input type="submit" value="Search">
         </form>
     </div>
 
-    <div id="main">
-        <p><strong>Number of search results: {{ results|length }}</strong></p>
-
-        {% for result in results %}
-        <div class="result">
-            <strong>Document:</strong> {{ result.document }}<br>
-            <strong>Section:</strong> {{ result.section }}<br>
-            <strong>Text:</strong> {{ result.text }}
-        </div>
-        {% endfor %}
+    <div id="content">
+        {% if results %}
+            <p><strong>Number of search results: {{ results|length }}</strong></p>
+            {% for result in results %}
+                <div class="result">
+                    <strong>Document:</strong> {{ result.document }}<br>
+                    <strong>Section:</strong> {{ result.section }}<br>
+                    <strong>Text:</strong> {{ result.text }}
+                </div>
+            {% endfor %}
+        {% elif query %}
+            <p><strong>Number of search results: 0</strong></p>
+        {% endif %}
     </div>
 </body>
 </html>
