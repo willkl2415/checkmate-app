@@ -2,20 +2,19 @@ import os
 import json
 import docx
 
-# Updated section headings for JSP 822 and DTSM 2
 headings_by_file = {
     "JSP 822 V7.0 Vol 2 V3.0 Defence Individual Training.docx": [
         "1 Preface", "1.1 How to use this Volume", "1.2 Defence Training Support Manuals",
-        "2 Introduction to Individual Training", "2.1 Details",
-        "3 Management of Training System", "3.1 Introduction", "3.2 Roles / Stakeholders",
-        "3.3 Training Governance Groups", "3.4 MTS Activities and Outputs",
-        "4 Analysis of Individual Training", "4.1 Introduction", "4.2 TNA Steering Group",
-        "4.3 Scoping Exercise", "4.4 Risk Register and Assumptions Register", "4.5 Scoping Exercise Report",
-        "4.6 Role Analysis", "4.7 Role Performance Statement and / or Framework(s)", "4.8 Training Gap Analysis",
-        "4.9 Initial Training Objectives", "4.10 Training Options Analysis", "4.11 Training Needs Report",
-        "5 Designing Individual Training", "5.1 Introduction", "5.2 Individual Training Objectives",
-        "5.3 Formal Training Statement (FTS)", "5.4 Enabling Objectives / Key learning Points",
-        "5.5 Assessment Strategy", "5.6 Selection of Methods and Media", "5.7 Learning Scalar / Learning Specification",
+        "2 Introduction to Individual Training", "2.1 Details", "3 Management of Training System",
+        "3.1 Introduction", "3.2 Roles / Stakeholders", "3.3 Training Governance Groups",
+        "3.4 MTS Activities and Outputs", "4 Analysis of Individual Training", "4.1 Introduction",
+        "4.2 TNA Steering Group", "4.3 Scoping Exercise", "4.4 Risk Register and Assumptions Register",
+        "4.5 Scoping Exercise Report", "4.6 Role Analysis", "4.7 Role Performance Statement and / or Framework(s)",
+        "4.8 Training Gap Analysis", "4.9 Initial Training Objectives", "4.10 Training Options Analysis",
+        "4.11 Training Needs Report", "5 Designing Individual Training", "5.1 Introduction",
+        "5.2 Individual Training Objectives", "5.3 Formal Training Statement (FTS)",
+        "5.4 Enabling Objectives / Key learning Points", "5.5 Assessment Strategy",
+        "5.6 Selection of Methods and Media", "5.7 Learning Scalar / Learning Specification",
         "6 Delivery of Individual Training", "6.1 Introduction", "6.2 Preparing Training",
         "6.3 Remedial Training Strategy", "6.4 Programming, Scheduling and Resourcing of Training",
         "6.5 Management of Training Deficiency (Inability to train / Failure of training)",
@@ -27,10 +26,10 @@ headings_by_file = {
         "8.8 Personnel Delivering and Assessing Defence Trainer Capability Training Interventions",
         "8.9 Adventurous Training Trainer", "8.10 Contractor",
         "9 Defence Direction on Remedial Training in Initial Training", "9.1 Introduction",
-        "9.2 The Vital Role of the Trainer",
-        "10 Defence Direction on Robust Training", "10.1 Introduction", "10.2 Good Practice",
-        "10.3 Examples of Robust Training Factors", "10.4 Risks with Robust Training", "10.5 Governance",
-        "10.6 Training", "10.7 Exertional Collapse, Universal Training Precautions (UTP) and Physical Activity Opt- Out Policy",
+        "9.2 The Vital Role of the Trainer", "10 Defence Direction on Robust Training", "10.1 Introduction",
+        "10.2 Good Practice", "10.3 Examples of Robust Training Factors", "10.4 Risks with Robust Training",
+        "10.5 Governance", "10.6 Training",
+        "10.7 Exertional Collapse, Universal Training Precautions (UTP) and Physical Activity Opt- Out Policy",
         "11 Document Information", "11.1 Document Coverage", "11.2 Document Information", "11.3 Document Versions",
         "12 Applicability", "13 Diversity and Inclusion"
     ],
@@ -53,9 +52,9 @@ headings_by_file = {
     ]
 }
 
-def extract_chunks(file_path):
-    doc = docx.Document(file_path)
-    filename = os.path.basename(file_path)
+def extract_chunks(doc_path):
+    doc = docx.Document(doc_path)
+    filename = os.path.basename(doc_path)
     known_headings = headings_by_file.get(filename, [])
     current_section = "Unknown Section"
     chunks = []
@@ -64,9 +63,12 @@ def extract_chunks(file_path):
         text = para.text.strip()
         if not text:
             continue
+
         match = next((h for h in known_headings if text.startswith(h)), None)
         if match:
             current_section = match
+            continue
+
         chunks.append({
             "document": filename,
             "section": current_section,
@@ -77,13 +79,16 @@ def extract_chunks(file_path):
 
 def main():
     all_chunks = []
-    for file in os.listdir("docs"):
+    docs_path = "docs"
+    for file in os.listdir(docs_path):
         if file.endswith(".docx") and not file.startswith("~$"):
-            path = os.path.join("docs", file)
-            all_chunks.extend(extract_chunks(path))
+            full_path = os.path.join(docs_path, file)
+            all_chunks.extend(extract_chunks(full_path))
 
     with open("chunks.json", "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, ensure_ascii=False, indent=2)
+        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+
+    print(f"✅ Created chunks.json with {len(all_chunks)} entries.")
 
 if __name__ == "__main__":
     main()

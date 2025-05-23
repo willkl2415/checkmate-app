@@ -4,117 +4,99 @@
     <meta charset="UTF-8">
     <title>Check-Mate</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: row;
             margin: 0;
-            padding: 0;
-            background-color: #fdfbe7;
+            height: 100vh;
         }
-
-        #sidebar {
+        .sidebar {
             width: 320px;
-            min-width: 320px;
-            max-width: 320px;
+            background-color: #f4f4f4;
             padding: 20px;
-            background-color: #f6f6f6;
             border-right: 1px solid #ccc;
-            box-sizing: border-box;
         }
-
-        #content {
+        .main {
             flex-grow: 1;
-            padding: 20px;
+            padding: 30px 40px;
             overflow-y: auto;
+            background-color: #fffde7;
         }
-
         h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
+            font-size: 22px;
+            margin-top: 0;
         }
-
         label {
-            display: block;
-            margin-top: 15px;
             font-weight: bold;
+            margin-top: 15px;
+            display: block;
         }
-
         input[type="text"], select {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-top: 5px;
-            box-sizing: border-box;
-        }
-
-        button, input[type="submit"] {
-            margin-top: 20px;
-            padding: 10px 15px;
             font-size: 14px;
-            background-color: #3366ff;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #1e90ff;
             color: white;
             border: none;
             cursor: pointer;
+            font-size: 16px;
         }
-
         .result {
             background: white;
+            border-left: 5px solid #1e90ff;
             padding: 10px;
             margin-bottom: 15px;
-            border-left: 5px solid #3498db;
         }
-
         .result strong {
             display: block;
             margin-top: 5px;
         }
-
-        .section-title {
-            font-weight: bold;
-            color: #333;
-        }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <h1>Check-Mate</h1>
-        <form method="POST">
-            <label for="query">Enter your question or keyword:</label>
-            <input type="text" id="query" name="query" value="{{ query|default('') }}">
+<div class="sidebar">
+    <h1>Check-Mate</h1>
+    <form method="post">
+        <label for="query">Enter your question or keyword:</label>
+        <input type="text" name="query" id="query" value="{{ query or '' }}">
 
-            <label for="document">Filter by document (optional):</label>
-            <select id="document" name="document">
-                <option {% if selected_doc == "All documents" %}selected{% endif %}>All documents</option>
-                {% for doc in documents %}
-                    <option value="{{ doc }}" {% if selected_doc == doc %}selected{% endif %}>{{ doc }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="section">Filter by contents (optional):</label>
-            <select id="section" name="section">
-                <option {% if selected_section == "All sections" %}selected{% endif %}>All sections</option>
-                {% for sec in sections %}
-                    <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>{{ sec }}</option>
-                {% endfor %}
-            </select>
-
-            <input type="submit" value="Search">
-        </form>
-    </div>
-
-    <div id="content">
-        {% if results %}
-            <p><strong>Number of search results: {{ results|length }}</strong></p>
-            {% for result in results %}
-                <div class="result">
-                    <strong>Document:</strong> {{ result.document }}<br>
-                    <strong>Section:</strong> {{ result.section }}<br>
-                    <strong>Text:</strong> {{ result.text }}
-                </div>
+        <label for="document">Filter by document (optional):</label>
+        <select name="document" id="document">
+            <option value="">All documents</option>
+            {% for doc in available_documents %}
+                <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
             {% endfor %}
-        {% elif query %}
-            <p><strong>Number of search results: 0</strong></p>
-        {% endif %}
-    </div>
+        </select>
+
+        <label for="section">Filter by contents (optional):</label>
+        <select name="section" id="section">
+            <option value="">All sections</option>
+            {% for sec in available_sections %}
+                <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+<div class="main">
+    {% if query %}
+        <p><strong>Number of search results: {{ results|length }}</strong></p>
+        {% for result in results %}
+            <div class="result">
+                <strong>Document:</strong> {{ result.document }}
+                <strong>Section:</strong> {{ result.section }}
+                <strong>Text:</strong> {{ result.text }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 </body>
 </html>

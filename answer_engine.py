@@ -1,20 +1,20 @@
-import json
-
-def load_chunks():
-    with open("chunks.json", "r", encoding="utf-8") as f:
-        return json.load(f)
-
-def search_chunks(query, document_filter=None, section_filter=None):
-    query = query.strip().lower()
-    chunks = load_chunks()
+def answer_question(keyword, chunks, selected_document="", selected_section=""):
+    keyword_lower = keyword.lower()
+    keyword_tokens = set(keyword_lower.split())
 
     results = []
+
     for chunk in chunks:
-        if query in chunk["text"].lower():
-            if document_filter and chunk["document"] != document_filter:
-                continue
-            if section_filter and chunk["section"] != section_filter:
-                continue
-            results.append(chunk)
+        content = chunk.get("text", "").lower()
+        document_match = selected_document == "" or chunk["document"] == selected_document
+        section_match = selected_section == "" or chunk["section"] == selected_section
+
+        if document_match and section_match:
+            if keyword_lower in content or all(token in content for token in keyword_tokens):
+                results.append({
+                    "document": chunk["document"],
+                    "section": chunk["section"],
+                    "text": chunk["text"]
+                })
 
     return results
