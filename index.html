@@ -3,100 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Check-Mate</title>
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            margin: 0;
-            height: 100vh;
-        }
-        .sidebar {
-            width: 320px;
-            background-color: #f4f4f4;
-            padding: 20px;
-            border-right: 1px solid #ccc;
-        }
-        .main {
-            flex-grow: 1;
-            padding: 30px 40px;
-            overflow-y: auto;
-            background-color: #fffde7;
-        }
-        h1 {
-            font-size: 22px;
-            margin-top: 0;
-        }
-        label {
-            font-weight: bold;
-            margin-top: 15px;
-            display: block;
-        }
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            font-size: 14px;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #1e90ff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .result {
-            background: white;
-            border-left: 5px solid #1e90ff;
-            padding: 10px;
-            margin-bottom: 15px;
-        }
-        .result strong {
-            display: block;
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<div class="sidebar">
-    <h1>Check-Mate</h1>
-    <form method="post">
-        <label for="query">Enter your question or keyword:</label>
-        <input type="text" name="query" id="query" value="{{ query or '' }}">
-
-        <label for="document">Filter by document (optional):</label>
-        <select name="document" id="document">
-            <option value="">All documents</option>
-            {% for doc in available_documents %}
-                <option value="{{ doc }}" {% if doc == selected_document %}selected{% endif %}>{{ doc }}</option>
-            {% endfor %}
-        </select>
-
-        <label for="section">Filter by contents (optional):</label>
-        <select name="section" id="section">
-            <option value="">All sections</option>
-            {% for sec in available_sections %}
-                <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
-            {% endfor %}
-        </select>
-
-        <button type="submit">Search</button>
-    </form>
-</div>
-
-<div class="main">
-    {% if query %}
-        <p><strong>Number of search results: {{ results|length }}</strong></p>
-        {% for result in results %}
-            <div class="result">
-                <strong>Document:</strong> {{ result.document }}
-                <strong>Section:</strong> {{ result.section }}
-                <strong>Text:</strong> {{ result.text }}
+    <div id="layout">
+        <div id="left-panel">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Chess_piece_-_Red_Rook.png" alt="Check-Mate" style="width:80px;"><br><br>
+            <div id="narrative">
+                <h2>Check-Mate</h2>
+                <p>Your Defence Training Intelligence Assistant</p>
+                <ul>
+                    <li>Understands DSAT doctrine</li>
+                    <li>Searches JSP 822, DTSM 2</li>
+                    <li>Returns structured, cited answers</li>
+                </ul>
             </div>
-        {% endfor %}
-    {% endif %}
-</div>
+        </div>
+        <div id="right-panel">
+            <form method="post" action="/ask">
+                <textarea name="query" rows="6" placeholder="Ask Check-Mate anything about DSAT..."></textarea><br>
+                <button type="submit" class="red-button">Submit</button>
+            </form>
+            <div id="response-box">
+                <h2>Check-Mate’s Response</h2>
+                <div id="response-text">{{ response if response else 'Awaiting your question...' }}</div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
