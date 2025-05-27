@@ -1,20 +1,12 @@
-def answer_question(keyword, chunks, selected_document="", selected_section=""):
-    keyword_lower = keyword.lower()
-    keyword_tokens = set(keyword_lower.split())
+import json
 
-    results = []
+def load_chunks():
+    with open("chunks.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
-    for chunk in chunks:
-        content = chunk.get("text", "").lower()
-        document_match = selected_document == "" or chunk["document"] == selected_document
-        section_match = selected_section == "" or chunk["section"] == selected_section
-
-        if document_match and section_match:
-            if keyword_lower in content or all(token in content for token in keyword_tokens):
-                results.append({
-                    "document": chunk["document"],
-                    "section": chunk["section"],
-                    "text": chunk["text"]
-                })
-
-    return results
+def answer_question(query):
+    query = query.lower()
+    for chunk in load_chunks():
+        if all(word in chunk["content"].lower() for word in query.split()):
+            return f"{chunk['document']} | {chunk['heading']}\n\n{chunk['content']}"
+    return "No relevant content found for your question in the loaded documents."
